@@ -1,0 +1,134 @@
+
+#controller{
+width:690px;
+height:265px;
+background-color: blue ;
+background:url(/img/snesController.png) no-repeat;
+position:relative;
+}
+
+#controller *
+{
+display:block;
+position:absolute;
+
+background-color: transparent; 
+
+}
+#controllerY
+{
+ width: 40px ;
+ height: 40px ;
+ top: 105px ;
+ left: 337px;
+ }
+
+#controllerLeft
+{
+ width: 37px ;
+ height: 37px ;
+
+ top: 109px;
+ left: 55px ;
+}
+
+
+#controllerRight
+{
+ width: 37px ;
+ height: 37px ;
+
+ top: 109px;
+ left: 126px ;
+}
+
+
+
+#controllerUp
+{
+ width: 37px ;
+ height: 37px ;
+
+ top: 75px;
+ left: 90px ;
+}
+
+
+
+#controllerDown
+{
+ width: 37px ;
+ height: 37px ;
+
+ top: 145px;
+ left: 90px ;
+}
+
+
+
+#controllerA
+{
+ width: 40px ;
+ height: 40px ;
+
+ top: 105px;
+ left: 435px ;
+}
+
+
+#controllerB
+{
+ width: 40px ;
+ height: 40px ;
+
+ top: 145px;
+ left: 385px ;
+}
+
+
+#controllerX
+{
+ width: 40px ;
+ height: 40px ;
+
+ top: 70px;
+ left: 385px ;
+}
+
+
+
+#controllerSelect
+{
+ width: 50px ;
+ height: 35px ;
+
+ top: 125px;
+ left: 185px ;
+ }
+
+
+
+#controllerStart
+{
+ width: 50px ;
+ height: 35px ;
+
+ top: 125px;
+ left: 245px ;
+}
+
+#message
+{
+ color: #303149;
+ width: 140px ;
+ height: 40px ;
+
+ top: 77px;
+ left: 190px ;
+
+ font-family: "sansation" ;
+ font-size: 21px;
+ font-weight: bold ; 
+ }
+
+

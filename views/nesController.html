@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Title of the document</title>
+<link rel="stylesheet" type="text/css" href="/css/nesController.css" />
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="/js/socket.io.js"></script> 
+
+<script type="text/javascript">
+
+function ControllerButton() {}
+
+ControllerButton.prototype.init = function( symbol, socket )
+	{
+	 var self = this ;
+	 this.socket = socket ;
+
+	 this.isDown = false ;
+
+	 $( '#' + symbol ).mousedown( 
+		function()
+			{
+			 self.socket.emit( symbol, 'down' ) ;
+			 self.isDown = true ;
+
+
+			 console.log( symbol + ' down' ) ;
+			}
+	 ) ;
+
+	 $( '#' + symbol ).mouseup( 
+		function()
+			{
+             self.socket.emit( symbol, 'up' ) ;
+
+			 self.isDown = false ;
+
+			 console.log( symbol + ' up' ) ;
+			}
+	 ) ;
+
+
+	 $( '#' + symbol ).mouseout( 
+		function()
+			{
+			 if( !self.isDown ) return ;
+
+
+			 self.isDown = false ;
+			 self.socket.emit( symbol, 'up' ) ;
+
+			 console.log( symbol + ' up' ) ;
+			}
+	 ) ;
+	 return this ;
+	} ;
+
+function Controller() {}
+
+Controller.prototype.init = function( socket )
+	{
+	 this.up = ( new ControllerButton() ).init( 'controllerUp', socket ) ;
+	 this.down = ( new ControllerButton() ).init( 'controllerDown', socket  ) ;
+	 this.left = ( new ControllerButton() ).init( 'controllerLeft', socket  ) ;
+	 this.right = ( new ControllerButton() ).init( 'controllerRight', socket  ) ;
+
+	 this.a = ( new ControllerButton() ).init( 'controllerA', socket  ) ;
+	 this.b = ( new ControllerButton() ).init( 'controllerB', socket  ) ;
+
+	 this.select = ( new ControllerButton() ).init( 'controllerSelect', socket  ) ;
+	 this.start = ( new ControllerButton() ).init( 'controllerStart', socket  ) ;
+
+     socket.emit( 'controllerConnect', 'hello' ) ;
+
+	 return this ;
+	} ;
+
+var controller ;
+$( document ).ready( function()
+	{
+     var socket = io.connect( 'http://' + location.hostname + ':'+ '{{socketIoPort}}' ) ;
+     
+     socket.on( 'setMessage', function( data )
+        {
+         console.log( data ) ;
+        
+         $( '#message' ).html( data ) ;
+        } ) ;
+    
+     console.log( 'http://' + location.hostname + ':'+ '{{socketIoPort}}' ) ;
+    
+	 controller = ( new Controller() ).init( socket ) ;
+	} ) ;
+
+</script>
+</head>
+
+<body>
+<div id="controller">
+<a id="controllerUp" href=#nogo  ></a>
+<a id="controllerDown" href=#nogo  ></a>
+<a id="controllerLeft" href=#nogo  ></a>
+<a id="controllerRight" href=#nogo  ></a>
+
+<a id="controllerA" href=#nogo  ></a>
+<a id="controllerB" href=#nogo  ></a>
+
+<a id="controllerSelect" href=#nogo  ></a>
+<a id="controllerStart" href=#nogo  ></a>
+
+<div id="message" > connecting </div>
+</div>
+
+</body>
+
+</html>

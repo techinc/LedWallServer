@@ -1,0 +1,123 @@
+
+#controller{
+width:690px;
+height:265px;
+background-color: blue ;
+background:url(/img/nesController.png) no-repeat;
+position:relative;
+}
+
+#controller *
+{
+display:block;
+position:absolute;
+}
+
+#controllerLeft
+{
+ width: 60px ;
+ height: 60px ;
+
+ top: 113px;
+ left: 30px ;
+
+}
+
+
+#controllerRight
+{
+ width: 60px ;
+ height: 60px ;
+
+ top: 113px;
+ left: 140px ;
+
+}
+
+
+
+#controllerUp
+{
+ width: 60px ;
+ height: 60px ;
+
+ top: 55px;
+ left: 85px ;
+
+}
+
+
+
+#controllerDown
+{
+ width: 60px ;
+ height: 60px ;
+
+ top: 170px;
+ left: 85px ;
+
+}
+
+
+
+#controllerA
+{
+ width: 75px ;
+ height: 75px ;
+
+ top: 140px;
+ left: 540px ;
+
+}
+
+
+#controllerB
+{
+ width: 75px ;
+ height: 75px ;
+
+ top: 140px;
+ left: 445px ;
+
+}
+
+
+
+
+#controllerSelect
+{
+ width: 90px ;
+ height: 70px ;
+
+ top: 145px;
+ left: 215px ;
+
+}
+
+
+
+#controllerStart
+{
+ width: 90px ;
+ height: 70px ;
+
+ top: 145px;
+ left: 325px ;
+}
+
+#message
+{
+ color: #b03109;
+ width: 390px ;
+ height: 70px ;
+
+ top: 57px;
+ left: 230px ;
+
+ font-family: "sansation" ;
+ font-size: 21px;
+ font-weight: bold ;
+ 
+ 
+ 
+}

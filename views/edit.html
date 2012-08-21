@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Title of the document</title>
+<link rel="stylesheet" type="text/css" href="/css/controller.css" />
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
+
+</head>
+<body>
+file: {{fileName}}
+<form method="get" action="/list">
+<input name="fileName" type="hidden" value="{{fileName}}">
+host    <input name="host" type="text" value="{{host}}">
+port     <input name="port" type="text" value="{{port}}" >
+path     <input name="path" type="text" value="{{path}}">
+frameDuration     <input name="frameDuration" type="text" value="{{frameDuration}}">
+<input type="submit">    
+    
+</form>
+
+</body>
+</html>
