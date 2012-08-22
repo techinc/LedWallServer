@@ -73,7 +73,7 @@ ArduinoScreen.prototype.setColor = function( x, y, color )
     {
      AbstractScreen.prototype.setColor.call( this, x, y, color ) ;
     
-     console.log( 'x: ' + x +  ' y '  + y + ' time ' + ( new Date() ).getTime() ) ; 
+     // console.log( 'x: ' + x +  ' y '  + y + ' time ' + ( new Date() ).getTime() ) ; 
     
      var rowStartIndex           = x * this.height ;
    
@@ -97,9 +97,9 @@ ArduinoScreen.prototype.setColor = function( x, y, color )
      putPixelCommand[ 3 ] = Math.floor( 250 * color[ 2 ] ) ;
      
 
-     console.log( 'putPixelCommand' ) ;
+     // console.log( 'putPixelCommand' ) ;
      
-     console.log( putPixelCommand ) ;
+     // console.log( putPixelCommand ) ;
      
      this.send( putPixelCommand ) ;
     } ;

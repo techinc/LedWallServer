@@ -1,7 +1,8 @@
 
 
 
-define( [ 'path', 'express', 'mustache', 'fs', 'consolidate', 'socket.io', 'os', './ArduinoScreen', 'fs', 'url', './GamePicker' ], function( path, express, mustache, fs, consolidate, socketio, os, ArduinoScreen, fs, url, GamePicker )
+define( [ 'path', 'express', 'mustache', 'fs', 'consolidate', 'socket.io', 'os', './ArduinoScreen', 'fs', 'url', './GamePicker', './PlayerQueueManagement' ], 
+function(  path,   express,   mustache,   fs,   consolidate,   socketio,    os,     ArduinoScreen,   fs,   url,     GamePicker,     PlayerQueueManagement )
 {
 
 var WIDTH  = 12 ;
@@ -37,31 +38,22 @@ server.configure(function(){
   server.engine('.html', consolidate.mustache   );
 
 });
-
-/*
-fs.readFile( './games/rainbowRipple.json', function( err, data )
+var playerQueueManagement = ( new PlayerQueueManagement() ).init() ;
+ 
+ 
+io.sockets.on( 'connection', function()
     {
-     //setTimeout( function() { 
-     screen.fromObject( JSON.parse( data ).image ) ;
-
-fs.readFile( './games/redSquare.json', function( err, data )
-    {
-     screen.fromObject( JSON.parse( data ).image ) ;
-
- fs.readFile( './games/rainbowRipple.json', function( err, data )
-    {   
-
-     screen.fromObject( JSON.parse( data ).image ) ;
-     } ) ;
-    } ) ;   
-
-     // }, 2000 ) ;
-     
+     self.playerQueueManagement.addConnectingPlayer( socket.id ) ;
     } ) ;
- */
+        
+        
+io.sockets.on( 'disconnect' , function()
+    {
+     self.playerQueueManagement.removeDisconnectingPlayer( socket.id ) ;
+    } ) ;
+
  
- 
-gamePicker = ( new GamePicker() ).init( screen, io.sockets ) ;
+gamePicker = ( new GamePicker() ).init( screen, io.sockets, server, playerQueueManagement ) ;
  
 
 server.get('/', function(req, res){
@@ -159,5 +151,7 @@ io.sockets.on( 'connection', function( socket )
         } ) ;
 
 server.listen(3000);
+
+
 }, 2000 ) ;
 } ) ;

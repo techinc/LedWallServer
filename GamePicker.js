@@ -6,7 +6,7 @@ define( [ 'fs', './GameExecuter' ], function( fs, GameExecuter )
  function GamePicker() {} ;
  
  
- GamePicker.prototype.init = function( screen, sockets )
+ GamePicker.prototype.init = function( screen, sockets, server, playerQueueManagement )
     {
     console.log( 'init game picker' ) ;
      var self = this ;
@@ -25,6 +25,8 @@ define( [ 'fs', './GameExecuter' ], function( fs, GameExecuter )
 
      this.listenToAllClientsForNavigation() ;
          
+     this.server = server ;
+     this.playerQueueManagement = playerQueueManagement ;
      return this ;
     } ;
  
@@ -61,7 +63,7 @@ define( [ 'fs', './GameExecuter' ], function( fs, GameExecuter )
   
  GamePicker.prototype.listenToAllClientsForGameExit = function()
     {
-     
+     var self = this ;
     
      var clients = this.sockets.clients() ;
      for( var i in clients ) 
@@ -104,7 +106,7 @@ define( [ 'fs', './GameExecuter' ], function( fs, GameExecuter )
              self.listenToAllClientsForGameExit() ;
 
              self.isPlayingGame = true ;
-             self.currentGameExecuter = ( new GameExecuter() ).init( self.screen, self.selectedGameInfo ) ;
+             self.currentGameExecuter = ( new GameExecuter() ).init( self.screen, self.selectedGameInfo, self.sockets, self.server, self.playerQueueManagement ) ;
             }         
         } ) ;
         

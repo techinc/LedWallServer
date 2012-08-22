@@ -11,6 +11,8 @@ var animationInterval ;
 http.createServer(function (req, res) {
   res.writeHead(200, {'Content-Type': 'text/plain'});
   
+
+  
   if( req.url == '/init' )
     {
      var responseData = "" ;
