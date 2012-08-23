@@ -265,7 +265,7 @@ MultiDrawer.prototype.increaseColorComponent = function( colorComponent ) { retu
 
 MultiDrawer.prototype.decreaseColorComponent = function( colorComponent ) 
     {
-     colorComponent -= COLOR_SPEED * FRAME_DURATION / 1000 ) ; 
+     colorComponent -= COLOR_SPEED * FRAME_DURATION / 1000 ; 
      return colorComponent + ( colorComponent < 0 ? ( x < 0 ? -Math.floor( x ) : 0 ) ;
     }
 
