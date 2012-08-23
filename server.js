@@ -1,157 +1,187 @@
+var path = require("path");
+var express = require("express");
+var mustache = require("mustache");
+var fs = require("fs");
+var consolidate = require("consolidate");
+var socketio = require("socket.io");
+var os = require("os");
+var ArduinoScreen = require("./ArduinoScreen");
+var fs = require("fs");
+var url = require("url");
+var GamePicker = require("./GamePicker");
+var PlayerQueueManagement = require("./PlayerQueueManagement");
+
+var WIDTH = 12;
+var HEIGHT = 10;
+
+var screen = (new ArduinoScreen()).init('/dev/tty.usbmodem1a21', WIDTH, HEIGHT);
+var gamePicker;
+
+setTimeout(function() {
+
+
+    var server = express();
+
+
+    var socketIoPort = 3001;
+
+    var io = socketio.listen(socketIoPort);
+
+    io.set('log level', 0);
+
+
+    server.configure(function() {
+
+        // server.use('/media', express.static(__dirname + '/media'));
+        //  server.use(express.static(__dirname + '/public'));
 
 
 
-define( [ 'path', 'express', 'mustache', 'fs', 'consolidate', 'socket.io', 'os', './ArduinoScreen', 'fs', 'url', './GamePicker', './PlayerQueueManagement' ], 
-function(  path,   express,   mustache,   fs,   consolidate,   socketio,    os,     ArduinoScreen,   fs,   url,     GamePicker,     PlayerQueueManagement )
-{
+        server.use(express.static(path.dirname() + '/public'));
 
-var WIDTH  = 12 ;
-var HEIGHT = 10 ;
+        server.set('views', path.dirname() + '/views');
 
-var screen = ( new ArduinoScreen() ).init( '/dev/tty.usbmodem1a21', WIDTH, HEIGHT ) ;
-var gamePicker ;
+        server.engine('.html', consolidate.mustache);
 
-setTimeout( function() {
+    });
+    var playerQueueManagement = (new PlayerQueueManagement()).init();
 
 
-var server = express();
+    io.sockets.on('connection', function() {
+        self.playerQueueManagement.addConnectingPlayer(socket.id);
+    });
 
 
-var socketIoPort = 3001 ;
-
-var io = socketio.listen( socketIoPort ) ;
-
-io.set( 'log level', 0 ) ;
+    io.sockets.on('disconnect', function() {
+        self.playerQueueManagement.removeDisconnectingPlayer(socket.id);
+    });
 
 
-server.configure(function(){
-
-  // server.use('/media', express.static(__dirname + '/media'));
-//  server.use(express.static(__dirname + '/public'));
+    gamePicker = (new GamePicker()).init(screen, io.sockets, server, playerQueueManagement);
 
 
+    server.get('/', function(req, res) {
+        res.render('snesController.html', {
+            socketIoPort: socketIoPort
+        });
+    });
 
-  server.use(express.static(path.dirname() + '/public'));
-  
-  server.set('views', path.dirname() + '/views');
+    server.get('/list', function(req, res) {
+        var getInfo = url.parse(req.url, true);
+        console.log('LIST ' + JSON.stringify(getInfo));
 
-  server.engine('.html', consolidate.mustache   );
+        if (getInfo.query && getInfo.query.fileName) {
+            console.log('ADDING FILE');
 
-});
-var playerQueueManagement = ( new PlayerQueueManagement() ).init() ;
- 
- 
-io.sockets.on( 'connection', function()
-    {
-     self.playerQueueManagement.addConnectingPlayer( socket.id ) ;
-    } ) ;
-        
-        
-io.sockets.on( 'disconnect' , function()
-    {
-     self.playerQueueManagement.removeDisconnectingPlayer( socket.id ) ;
-    } ) ;
+            try {
+                var gameInfoString = fs.readFileSync('./games/' + getInfo.query.fileName);
+            } catch (err) {
+                gameInfoString = false
+            }
 
- 
-gamePicker = ( new GamePicker() ).init( screen, io.sockets, server, playerQueueManagement ) ;
- 
+            var gameInfo = getInfo.query;
 
-server.get('/', function(req, res){
-  res.render( 'snesController.html', { socketIoPort: socketIoPort } );
-});
+            var fileName = getInfo.query.fileName;
 
-server.get( '/list', function( req, res ) 
-    {
-     var getInfo = url.parse( req.url, true ) ;
-     console.log( 'LIST ' + JSON.stringify( getInfo )  ) ;
-     
-     if( getInfo.query && getInfo.query.fileName )
-        {
-         console.log( 'ADDING FILE' ) ;
-         
-         try{ var gameInfoString = fs.readFileSync( './games/' + getInfo.query.fileName ) ; }
-         catch( err ) { gameInfoString = false }
-         
-         var gameInfo = getInfo.query ;
-         
-         var fileName = getInfo.query.fileName ;
-         
-         delete gameInfo.fileName ;
-         
-         if( gameInfoString )
-            gameInfo.image = JSON.parse( gameInfoString ).image ;
-        
-         console.log( './games/' + fileName ) ;
-        
-         fs.writeFileSync( './games/' + fileName, JSON.stringify( gameInfo ) ) ;
-         
-         gamePicker.loadGames() ;
+            delete gameInfo.fileName;
+
+            if (gameInfoString) gameInfo.image = JSON.parse(gameInfoString).image;
+
+            console.log('./games/' + fileName);
+
+            fs.writeFileSync('./games/' + fileName, JSON.stringify(gameInfo));
+
+            gamePicker.loadGames();
         }
-    
-    
-     var fileSet = fs.readdirSync( './games' ) ;
-    
-     console.log( fileSet ) ;
-    
-     var fileSetForView = { fileSet: [] }
-    
-     for( var i in fileSet )
-        
-         fileSetForView.fileSet.push( { fileName: fileSet[ i ] } ) ;
-    
-     console.log( fileSetForView ) ;         
-    
-     res.render( 'list.html', fileSetForView ) ; 
-    } ) ;
-    
-    
-server.get( '/edit', function( req, res ) 
-    {
-     console.log( 'EDIT' ) ;
-     
-     var getInfo = url.parse(req.url,true);
-     var gameInfoString = false ;
-     try { gameInfoString = fs.readFileSync( './games/' + getInfo.query.fileName ) ; } catch( err ) {} ;
-     
-     var view = {} ;
-     if( gameInfoString ) 
-        {
-         console.log( 'gameInfoString ' + gameInfoString ) ;
-         view = JSON.parse( gameInfoString ) ;
-         view.fileName = getInfo.query.fileName ;// "getInfo.filename" ;
+
+
+        var fileSet = fs.readdirSync('./games');
+
+        console.log(fileSet);
+
+        var fileSetForView = {
+            fileSet: []
         }
-     else
-        view = { fileName: getInfo.query.fileName, host: "", port: "", path: "", frameDuration: "" } ;
-    
-     res.render( 'edit.html', view ) ; 
-    } ) ;
+
+        for (var i in fileSet)
+
+        fileSetForView.fileSet.push({
+            fileName: fileSet[i]
+        });
+
+        console.log(fileSetForView);
+
+        res.render('list.html', fileSetForView);
+    });
 
 
-io.sockets.on( 'connection', function( socket )
-        {
-        
-         socket.emit( 'setMessage', '' ) ;
-      
-         console.log( 'socket connected' ) ;
-         
-         socket.on( 'controllerConnect', function( data ) { console.log( 'controllerConnect ' + data  ) ; } ) ;
+    server.get('/edit', function(req, res) {
+        console.log('EDIT');
 
-         socket.on( 'controllerA', function( data ) { console.log( 'a' + data ) ; /* socket.emit( 'setMessage', 'a' ) ; */ } ) ;
-         socket.on( 'controllerB', function( data ) { console.log( 'b' + data ) ; /* socket.emit( 'setMessage', 'b' ) ;  */ } ) ;
+        var getInfo = url.parse(req.url, true);
+        var gameInfoString = false;
+        try {
+            gameInfoString = fs.readFileSync('./games/' + getInfo.query.fileName);
+        } catch (err) {};
 
-         socket.on( 'controllerStart', function( data ) { console.log( 'start' + data ) ; } ) ;
-         socket.on( 'controllerSelect', function( data ) { console.log( 'select' + data ) ; } ) ;
+        var view = {};
+        if (gameInfoString) {
+            console.log('gameInfoString ' + gameInfoString);
+            view = JSON.parse(gameInfoString);
+            view.fileName = getInfo.query.fileName; // "getInfo.filename" ;
+        } else view = {
+            fileName: getInfo.query.fileName,
+            host: "",
+            port: "",
+            path: "",
+            frameDuration: ""
+        };
 
-         socket.on( 'controllerUp', function( data ) { console.log( 'up' + data ) ; } ) ;
-         socket.on( 'controllerDown', function( data ) { console.log( 'down' + data ) ; } ) ;
-         socket.on( 'controllerLeft', function( data ) { console.log( 'left' + data ) ; } ) ;
-         socket.on( 'controllerRight', function( data ) { console.log( 'right' + data ) ; } ) ;
-
-                 
-        } ) ;
-
-server.listen(3000);
+        res.render('edit.html', view);
+    });
 
 
-}, 2000 ) ;
-} ) ;
+    io.sockets.on('connection', function(socket) {
+
+        socket.emit('setMessage', '');
+
+        console.log('socket connected');
+
+        socket.on('controllerConnect', function(data) {
+            console.log('controllerConnect ' + data);
+        });
+
+        socket.on('controllerA', function(data) {
+            console.log('a' + data); /* socket.emit( 'setMessage', 'a' ) ; */
+        });
+        socket.on('controllerB', function(data) {
+            console.log('b' + data); /* socket.emit( 'setMessage', 'b' ) ;  */
+        });
+
+        socket.on('controllerStart', function(data) {
+            console.log('start' + data);
+        });
+        socket.on('controllerSelect', function(data) {
+            console.log('select' + data);
+        });
+
+        socket.on('controllerUp', function(data) {
+            console.log('up' + data);
+        });
+        socket.on('controllerDown', function(data) {
+            console.log('down' + data);
+        });
+        socket.on('controllerLeft', function(data) {
+            console.log('left' + data);
+        });
+        socket.on('controllerRight', function(data) {
+            console.log('right' + data);
+        });
+
+
+    });
+
+    server.listen(3000);
+
+
+}, 2000);
