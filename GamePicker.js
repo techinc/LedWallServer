@@ -28,7 +28,9 @@ GamePicker.prototype.init = function(screen, sockets, server, playerQueueManagem
 };
 
 GamePicker.prototype.loadGames = function() {
-    this.gameInfoSet = fs.readdirSync('./games');
+    this.gameInfoSet = fs.readdirSync('./games').filter(function (name) {
+        return name[0]!='.';
+    });
 
     if (!this.playingGame) this.selectGameInfo(!isNaN(this.selectedGameInfoIndex) ? this.selectedGameInfoIndex : 0);
 }
