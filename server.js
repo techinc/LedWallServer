@@ -14,7 +14,7 @@ var PlayerQueueManagement = require("./PlayerQueueManagement");
 var WIDTH = 12;
 var HEIGHT = 10;
 
-var screen = (new ArduinoScreen()).init('/dev/tty.usbmodem1a21', WIDTH, HEIGHT);
+var screen = (new ArduinoScreen()).init('/dev/lcddisplay', WIDTH, HEIGHT);
 var gamePicker;
 
 setTimeout(function() {
