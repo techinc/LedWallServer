@@ -1,0 +1,27 @@
+{
+  "name": "LedWallServer",
+  "version": "0.0.0",
+  "description": "all the stuff required to run TechInc's LED wall",
+  "dependencies": {
+    "mustache": "~0.5.2",
+    "socket.io": "~0.9.10",
+    "serialport": "~1.0.4",
+    "express": "~3.0.0rc3",
+    "consolidate": "~0.4.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node r.js main"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/guidocalvano/LedWallServer.git"
+  },
+  "keywords": [
+    "led",
+    "hardware"
+  ],
+  "author": "Guido Sales Calvano",
+  "license": "BSD"
+}
