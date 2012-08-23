@@ -7,12 +7,13 @@
     "socket.io": "~0.9.10",
     "serialport": "~1.0.4",
     "express": "~3.0.0rc3",
-    "consolidate": "~0.4.0"
+    "consolidate": "~0.4.0",
+    "norman": "git://github.com/FrozenFire/norman.git"
   },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node r.js main"
+    "start": "node start"
   },
   "repository": {
     "type": "git",

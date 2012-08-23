@@ -1,5 +1,5 @@
-main: node r main
-bouncingBallServer: node r bouncingBallServer
-columnScanServer: node r columnScanServer
-rowScanServer: node r rowScanServer
-rainbowRippleServer: node r rainbowRippleServer
+main: node server
+bouncingBallServer: node bouncingBallServer
+columnScanServer: node columnScanServer
+rowScanServer: node rowScanServer
+rainbowRippleServer: node rainbowRippleServer
