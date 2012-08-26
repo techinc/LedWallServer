@@ -66,6 +66,20 @@ setTimeout(function() {
         });
     });
 
+    server.get('/space/open', function(req, res) {
+        gamePicker.startup(function() {
+            res.end();
+        });
+    });
+
+    server.get('/space/closed', function(req, res) {
+        gamePicker.shutdown(function() {
+            for(var x = 0; x < WIDTH; x++) for(var y = 0; y < HEIGHT; y++) screen.setColor(x,y,[0,0,0]);
+            res.end();
+        });
+    });
+
+
     server.get('/list', function(req, res) {
         var getInfo = url.parse(req.url, true);
         console.log('LIST ' + JSON.stringify(getInfo));

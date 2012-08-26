@@ -12,7 +12,6 @@ GamePicker.prototype.init = function(screen, sockets, server, playerQueueManagem
 
     // this.gameInfoSet = fs.readdirSync( './games' ) ;
 
-    this.loadGames();
 
     // this.selectedGameInfoIndex = 0 ;
 
@@ -20,7 +19,7 @@ GamePicker.prototype.init = function(screen, sockets, server, playerQueueManagem
 
     this.sockets = sockets;
 
-    this.listenToAllClientsForNavigation();
+    this.startup();
 
     this.server = server;
     this.playerQueueManagement = playerQueueManagement;
@@ -103,31 +102,36 @@ GamePicker.prototype.listenToSocketForGameExit = function(socket) {
 
     socket.on('controllerSelect', function(data) {
         if (data == 'down') {
-
-
-            self.currentGameExecuter.stopRequest(function() {
-                console.log("STOP REQUEST INVOKED");
-                self.isPlayingGame = true;
-
-                var screenshot = self.screen.toObject();
-
-                self.selectedGameInfo.image = screenshot;
-
-                fs.writeFileSync('./games/' + self.gameInfoSet[self.selectedGameInfoIndex], JSON.stringify(self.selectedGameInfo));
-
-
-                self.listenToAllClientsForNavigation();
-
-                // self.selectGameInfo( self.selectedGameInfoIndex ) ;
-                self.loadGames();
-            });
-
-
-            console.log('STOPPING CURRENT GAME');
+            self.shutdown(self.startup()); //restart the whole shebang
         }
     });
 
 };
+
+GamePicker.prototype.startup=function(callback) { 
+    self.listenToAllClientsForNavigation();
+    // self.selectGameInfo( self.selectedGameInfoIndex ) ;
+    self.loadGames();
+    if(callback) callback();
+};
+
+GamePicker.prototype.shutdown=function(callback) {
+    self.currentGameExecuter.stopRequest(function() {
+        console.log("STOP REQUEST INVOKED");
+        self.isPlayingGame = true;
+
+        var screenshot = self.screen.toObject();
+
+        self.selectedGameInfo.image = screenshot;
+
+        fs.writeFileSync('./games/' + self.gameInfoSet[self.selectedGameInfoIndex], JSON.stringify(self.selectedGameInfo));
+
+        if(callback) callback();
+    });
+
+
+    console.log('STOPPING CURRENT GAME');
+}
 
 
 
