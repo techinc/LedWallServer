@@ -13,7 +13,8 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node start"
+    "start": "node start",
+    "runathome": "node start -f ProcfileRunAtHome"
   },
   "repository": {
     "type": "git",

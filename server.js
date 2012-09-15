@@ -11,39 +11,56 @@ var url = require("url");
 var GamePicker = require("./GamePicker");
 var PlayerQueueManagement = require("./PlayerQueueManagement");
 
+var RemoteScreen = require( './RemoteScreen' ) ;
+
 var WIDTH = 12;
 var HEIGHT = 10;
 
-var screen = (new ArduinoScreen()).init('/dev/leddisplay', WIDTH, HEIGHT);
+var server = express();
+
+var htmlPort = 3000 ;
+var socketIoPort = 3001;
+var browserScreenPort = 4444 ;
+
+var io = socketio.listen(socketIoPort);
+
+io.set('log level', 0);
+
+
+server.configure(function() {
+
+    // server.use('/media', express.static(__dirname + '/media'));
+    //  server.use(express.static(__dirname + '/public'));
+
+    server.use(express.static(path.dirname() + '/public'));
+
+    server.set('views', path.dirname() + '/views');
+
+    server.engine('.html', consolidate.mustache);
+
+});
+    
+function screenFromArguments( args )
+    {
+
+     for( var i = 2 ; i < args.length ; i++ )
+        {   
+         console.log( args[ i ] ) ;
+         switch( args[ i ] )
+            {
+             case '--runAtHome' :
+                return (new RemoteScreen()).init( server, browserScreenPort, WIDTH, HEIGHT ) ;         
+            }
+        }
+     return (new ArduinoScreen()).init('/dev/leddisplay', WIDTH, HEIGHT) ;
+    } ;
+
+var screen = screenFromArguments( process.argv ) ;
+// (new ArduinoScreen()).init('/dev/leddisplay', WIDTH, HEIGHT);
 var gamePicker;
 
 setTimeout(function() {
 
-
-    var server = express();
-
-
-    var socketIoPort = 3001;
-
-    var io = socketio.listen(socketIoPort);
-
-    io.set('log level', 0);
-
-
-    server.configure(function() {
-
-        // server.use('/media', express.static(__dirname + '/media'));
-        //  server.use(express.static(__dirname + '/public'));
-
-
-
-        server.use(express.static(path.dirname() + '/public'));
-
-        server.set('views', path.dirname() + '/views');
-
-        server.engine('.html', consolidate.mustache);
-
-    });
     var playerQueueManagement = (new PlayerQueueManagement()).init();
 
 
@@ -181,7 +198,7 @@ setTimeout(function() {
 
     });
 
-    server.listen(3000);
+    server.listen(htmlPort);
 
 
 }, 2000);

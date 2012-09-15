@@ -1,0 +1,39 @@
+<!DOCTYPE html>  
+<!-- 
+-->
+<html lang="en">  
+  <head>  
+    <meta charset="utf-8">  
+    <title> LED Light District Browser Screen </title>  
+    <script src="https://raw.github.com/DmitryBaranovskiy/raphael/master/raphael-min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.8.1.min.js"></script>
+    <script src="/js/socket.io.js"></script>
+    <script src="/js/BrowserScreen.js"></script>
+
+    <script type="text/javascript" >
+       $( document ).ready( function() 
+		{
+         console.log( 'DOC READY' ) ;
+         
+         var browserScreen = ( new BrowserScreen() ).init( 40, {{width}}, {{height}} ) ;
+         
+         var socket = io.connect( 'http://' + location.hostname + ':' + {{port}} ) ;
+        
+        socket.on( 'p', function( arg )
+                        {
+                         console.log(  'BrowserScreen.setColor: ' + JSON.stringify( arg ) ) ;
+                         // browserScreen.setColor( arg.x, arg.y, arg.color ) ;
+                         browserScreen.executeCommand( arg ) ;
+                        } ) ;
+                
+        } ) ;
+          
+           
+    
+
+    </script>
+
+  </head>  
+  <body>  
+  </body>  
+</html>  
