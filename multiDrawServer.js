@@ -3,8 +3,8 @@ var http = require('http');
 var querystring = require('querystring');
 
 
-var COLOR_SPEED = 1 / 255;
-var MOVE_SPEED = 400 / 255;
+var COLOR_SPEED = 200 / 255;
+var MOVE_SPEED = 800 / 255;
 
 var FRAME_DURATION = 50;
 
@@ -15,6 +15,9 @@ var playerSet;
 
 var serverPort ;
 var serverPath ;
+
+var drawingOn = false ;
+
 http.createServer(function(req, res) {
     if (req.url == '/init') {
         var responseData = "";
@@ -113,6 +116,8 @@ http.createServer(function(req, res) {
             
             if( !player ) { res.end() ; return ; }
 
+            if( drawingOn ) player.putPixel() ;
+
             if (command.button == 'start' && command.event == 'down') {
                 
                 var options = {
@@ -162,7 +167,10 @@ http.createServer(function(req, res) {
                 else if (command.event == "up") player.stopMoveHorizontal();
                 break;
             case 'b':
-                if (command.event == "down") player.putPixel();
+                if (command.event == "down") drawingOn = true ;
+                else drawingOn = false ;
+                
+                if( drawingOn ) player.putPixel() ;
                 break;
 
             case 'y':
@@ -224,11 +232,11 @@ http.createServer(function(req, res) {
                 else if (command.event == "up") player.stopBlue();
                 break;
             case 'down':
-                if (command.event == "down") player.shrinkRed();
+                if (command.event == "down") player.shrinkBlue();
                 else if (command.event == "up") player.stopBlue();
                 break;
             case 'left':
-                if (command.event == "down") player.shrinkRed();
+                if (command.event == "down") player.shrinkBlue();
                 else if (command.event == "up") player.stopBlue();
                 break;
             case 'right':
@@ -338,7 +346,7 @@ MultiDrawer.prototype.growRed = function() {
     this.redInterval = setInterval(
 
     function() {
-        self.red = self.increaseColor(self.red);
+        self.red = self.increaseColorComponent(self.red);
     }, FRAME_DURATION);
 
 }
@@ -351,7 +359,7 @@ MultiDrawer.prototype.shrinkRed = function() {
     this.redInterval = setInterval(
 
     function() {
-        self.red = self.increaseColor(self.red);
+        self.red = self.decreaseColorComponent(self.red);
     }, FRAME_DURATION);
 
 }
@@ -373,7 +381,7 @@ MultiDrawer.prototype.growGreen = function() {
     this.greenInterval = setInterval(
 
     function() {
-        self.green = self.increaseColor(self.green);
+        self.green = self.increaseColorComponent(self.green);
     }, FRAME_DURATION);
 
 }
@@ -386,7 +394,7 @@ MultiDrawer.prototype.shrinkGreen = function() {
     this.greenInterval = setInterval(
 
     function() {
-        self.green = self.increaseColor(self.green);
+        self.green = self.decreaseColorComponent(self.green);
     }, FRAME_DURATION);
 
 }
@@ -408,7 +416,7 @@ MultiDrawer.prototype.growBlue = function() {
     this.blueInterval = setInterval(
 
     function() {
-        self.blue = self.increaseColor(self.blue);
+        self.blue = self.increaseColorComponent(self.blue);
     }, FRAME_DURATION);
 
 }
@@ -421,7 +429,7 @@ MultiDrawer.prototype.shrinkBlue = function() {
     this.blueInterval = setInterval(
 
     function() {
-        self.blue = self.increaseColor(self.blue);
+        self.blue = self.decreaseColorComponent(self.blue);
     }, FRAME_DURATION);
 
 }

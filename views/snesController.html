@@ -11,7 +11,7 @@
 
 function ControllerButton() {}
 
-ControllerButton.prototype.init = function( symbol, socket )
+ControllerButton.prototype.init = function( symbol, socket, keyCode )
 	{
 	 var self = this ;
 	 this.socket = socket ;
@@ -53,6 +53,27 @@ ControllerButton.prototype.init = function( symbol, socket )
 			 console.log( symbol + ' up' ) ;
 			}
 	 ) ;
+     
+     $( document ).keydown( 
+        function( event )
+            {
+             if( event.keyCode == keyCode )
+                {
+                 self.socket.emit( symbol, 'down' ) ;
+                 console.log( symbol + ' down' ) ;
+                }
+            } ) ;
+     
+     $( document ).keyup( 
+        function( event )
+            {
+             if( event.which == keyCode )
+                {
+                 self.socket.emit( symbol, 'up' ) ;
+                 console.log( symbol + ' up' ) ;
+                }
+            } ) ;
+            
 	 return this ;
 	} ;
 
@@ -60,18 +81,18 @@ function Controller() {}
 
 Controller.prototype.init = function( socket )
 	{
-	 this.up = ( new ControllerButton() ).init( 'controllerUp', socket ) ;
-	 this.down = ( new ControllerButton() ).init( 'controllerDown', socket  ) ;
-	 this.left = ( new ControllerButton() ).init( 'controllerLeft', socket  ) ;
-	 this.right = ( new ControllerButton() ).init( 'controllerRight', socket  ) ;
+	 this.up = ( new ControllerButton() ).init( 'controllerUp', socket, 38 ) ;
+	 this.down = ( new ControllerButton() ).init( 'controllerDown', socket, 40  ) ;
+	 this.left = ( new ControllerButton() ).init( 'controllerLeft', socket, 37  ) ;
+	 this.right = ( new ControllerButton() ).init( 'controllerRight', socket, 39  ) ;
 
-	 this.a = ( new ControllerButton() ).init( 'controllerA', socket  ) ;
-	 this.b = ( new ControllerButton() ).init( 'controllerB', socket  ) ;
-	 this.x = ( new ControllerButton() ).init( 'controllerX', socket  ) ;
-	 this.y = ( new ControllerButton() ).init( 'controllerY', socket  ) ;
+	 this.a = ( new ControllerButton() ).init( 'controllerA', socket, 90  ) ; // z
+	 this.b = ( new ControllerButton() ).init( 'controllerB', socket, 88  ) ; // x
+	 this.x = ( new ControllerButton() ).init( 'controllerX', socket, 67 ) ;  // c
+	 this.y = ( new ControllerButton() ).init( 'controllerY', socket, 86 ) ;  // v
 
-	 this.select = ( new ControllerButton() ).init( 'controllerSelect', socket  ) ;
-	 this.start = ( new ControllerButton() ).init( 'controllerStart', socket  ) ;
+	 this.select = ( new ControllerButton() ).init( 'controllerSelect', socket, 79 ) ; // m
+	 this.start = ( new ControllerButton() ).init( 'controllerStart', socket,  78) ; // n
 
 
 
