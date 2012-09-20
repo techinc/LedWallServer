@@ -11,6 +11,12 @@ RemoteScreen.prototype.init = function( server, socketPort, width, height )
      this.server = server ;
      this.socketSet = io.listen( socketPort ) ; 
      
+     var self = this ;
+     this.socketSet.configure( function()
+        {
+         self.socketSet.set( 'log level', 0 ) ;
+        } ) ;
+     
      server.get('/screen', function(req, res) {
 
         res.render('browserScreen.html', {port:socketPort, width: width, height: height });
@@ -33,7 +39,6 @@ RemoteScreen.prototype.setColor = function( x, y, color )
     {
      AbstractScreen.prototype.setColor.call(this, x, y, color);
     
-     console.log( 'sending color ' + JSON.stringify( arguments ) ) ;
     
     // this.socketSet.sockets.emit( 'BrowserScreen.setColor', { x: x, y: y, color: color } ) ;
     this.socketSet.sockets.emit( 'p', this.encodeCommand( x, y, color ) ) ;

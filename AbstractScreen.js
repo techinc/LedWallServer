@@ -11,8 +11,6 @@ AbstractScreen.prototype.init = function(width, height) {
             this.setColor(x, y, [0, 0, 0]);
         }
     }
-    console.log('END INIT');
-
     return this;
 };
 

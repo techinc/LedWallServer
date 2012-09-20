@@ -20,8 +20,12 @@ GamePicker.prototype.init = function(screen, sockets, server, playerQueueManagem
 
     this.sockets = sockets;
 
-    this.listenToAllClientsForNavigation();
+    this.boundListenToSocketForNavigation       = function( socket ) { self.listenToSocketForNavigation( socket ) }  ;
+    this.boundListenToAllClientsForNavigation   = function( socket ) { self.listenToAllClientsForNavigation( socket ) } ;
 
+    this.listenToAllClientsForNavigation();
+    
+      
     this.server = server;
     this.playerQueueManagement = playerQueueManagement;
     return this;
@@ -46,11 +50,14 @@ GamePicker.prototype.listenToAllClientsForNavigation = function() {
         this.listenToSocketForNavigation(clients[i]);
     }
 
-    this.sockets.removeAllListeners('connection');
+    if( this.boundListenToAllClientsForGameExit )
+        this.sockets.removeListener('connection', this.boundListenToAllClientsForGameExit );
 
-    this.sockets.on('connection', function(socket) {
-        self.listenToSocketForNavigation(socket);
-    });
+    this.sockets.on( 'connection', this.boundListenToSocketForNavigation ) ;
+
+    // this.sockets.on('connection', function(socket) {
+    //    self.listenToSocketForNavigation(socket);
+    // });
 
 };
 
@@ -66,7 +73,8 @@ GamePicker.prototype.listenToAllClientsForGameExit = function() {
         this.listenToSocketForGameExit(clients[i]);
     }
 
-    this.sockets.removeAllListeners('connection');
+    if( this.boundListenToSocketForNavigation )
+        this.sockets.removeListener('connection', this.boundListenToSocketForNavigation);
 
     this.sockets.on('connection', function(socket) {
         self.listenToSocketForGameExit(socket);
@@ -157,9 +165,10 @@ GamePicker.prototype.selectGameInfo = function(index) {
     if (index < 0) index = this.gameInfoSet.length - 1;
 
 
-    console.log('index' + index);
     this.selectedGameInfo = JSON.parse(fs.readFileSync('./games/' + this.gameInfoSet[index]));
 
+    console.log( './games/' + this.gameInfoSet[index] ) ;
+    console.dir( this.selectedGameInfo ) ;
 
     if (!this.selectedGameInfo.image) {
         this.selectedGameInfo.image = JSON.parse(fs.readFileSync('./public/img/screenshotUnavailable.asc'));

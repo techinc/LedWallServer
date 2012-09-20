@@ -7,97 +7,142 @@ function GameExecuter() {}
 GameExecuter.prototype.init = function(screen, gameInfo, sockets, server, playerQueueManagement) {
     var self = this;
 
-    this.sockets = sockets;
-    this.server = server;
-
-    this.playerQueueManagement = playerQueueManagement;
-
-
-
-    if (gameInfo.playerLimit) this.playerQueueManagement.startGame(gameInfo.playerLimit, function(id) {
-        self.introducePlayerRequest(id);
-    });
-
-
-    this.server.get('/killPlayer', function(req, res) {
-        self.playerQueueManagement.killPlayer(req.body.playerId);
-    });
-
-
-
     this.screen = screen;
 
     this.gameInfo = gameInfo;
+    
+    this.sockets = sockets;
+    this.server = server;
+    
 
+    this.playerQueueManagement = playerQueueManagement;
+
+    this.sequentialRequestQueue = [] ;
+   
+    if (gameInfo.playerLimit) this.playerQueueManagement.startGame(gameInfo.playerLimit, function(id) {        
+        self.introducePlayerRequest( id );
+        
+        var clients = self.sockets.clients() ;
+        
+        for( var i in clients )
+            if( clients[ i ].id == id )                
+                 self.streamControllerInput( clients[ i ], id ) ;
+                
+    });
+
+
+    this.server.post('/killPlayer', function(req, res) {
+        
+        console.log( 'KILL PLAYER REQUEST RECEIVED' ) ;
+        
+        
+        var responseData = "";
+
+        req.on('data', function(chunk) {
+            responseData += chunk;
+        });
+
+        req.on('end', function() {
+            var playerId = querystring.parse( responseData ).playerId ; // req.body.playerId ; // JSON.parse(responseData);
+
+            console.log( 'REQUEST COMPLETE, KILLING PLAYER WITH ID ' + playerId  ) ;
+            
+            var clients = self.sockets.clients() ;
+            for( var i in clients )
+                if( clients[ i ].id == playerId )      
+                    self.stopStreamingControllerInput( clients[ i ] ) ;
+                    
+            self.playerQueueManagement.killPlayer( playerId );
+
+        } ) ;
+        
+        res.end() ;
+    });
 
     this.initRequest();
 
-
     this.previousTime = (new Date()).getTime();
-
 
     this.sequentialRequestsQueue = [];
 
     this.isSendingSequentialRequest = false;
 
     return this;
-};
+} ;
 
-
-
-
-
-
-GameExecuter.prototype.getSocketById = function(id) {
+GameExecuter.prototype.getSocketById = function(socketId) {
+    console.log( 'GameExecuter.prototype.getSocketById( id ) with id = ' + socketId ) ;
+    
     var clients = this.sockets.clients(),
 
         client = null;
 
     for (var i in clients)
-    if (clients[i].id === id) client = clients[i]
-
+        {
+         console.log( ' i = ' + i + ' clients[ i ] = ' + clients[ i ] + 'clients[ i ].id = ' + clients[ i ].id + ' id = ' + socketId ) ;
+        
+         if (clients[i].id == socketId ) 
+            return clients[i] ;
+        } ;
     return client;
 };
 
 GameExecuter.prototype.introducePlayerRequest = function(playerId) {
     var self = this;
 
+    console.log( 'introducePlayerRequest ' + playerId ) ;
+    
 
-
+    this.sendSequentialRequest( 'introduce', playerId ) ;
 
     var client = this.getSocketById(playerId);
     client.on('disconnect', function() {
-        self.sendSequentialRequest('/removePlayer', {
-            playerId: playerId
-        });
+        self.sendSequentialRequest('removePlayer', playerId);
     });
 };
 
+GameExecuter.prototype.stopStreamingControllerInput = function( client )
+    {
+     client.removeAllListeners( 'controllerUp' ) ;
+     client.removeAllListeners( 'controllerDown' ) ;
+     client.removeAllListeners( 'controllerLeft' ) ;
+     client.removeAllListeners( 'controllerRight' ) ;
+
+     client.removeAllListeners( 'controllerA' ) ;
+     client.removeAllListeners( 'controllerB' ) ;
+     client.removeAllListeners( 'controllerX' ) ;
+     client.removeAllListeners( 'controllerY' ) ;
+
+     client.removeAllListeners( 'controllerStart' ) ;
+     
+    } ;
 
 GameExecuter.prototype.streamControllerInput = function(client, playerId) {
+    var self = this ;
+
     client.on('controllerUp', function(message) {
-        self.sendSequentialRequest('/playerCommand', {
+        self.sendSequentialRequest('playerCommand', {
             playerId: playerId,
             button: 'up',
             event: message
         });
     });
     client.on('controllerDown', function(message) {
-        self.sendSequentialRequest('/playerCommand', {
+        self.sendSequentialRequest('playerCommand', {
             playerId: playerId,
             button: 'down',
             event: message
         });
     });
     client.on('controllerLeft', function(message) {
-        self.sendSequentialRequest('/playerCommand', {
+        self.sendSequentialRequest('playerCommand', {
             playerId: playerId,
             button: 'left',
             event: message
         });
     });
     client.on('controllerRight', function(message) {
-        self.sendSequentialRequest('/playerCommand', {
+        self.sendSequentialRequest('playerCommand', {
             playerId: playerId,
             button: 'right',
             event: message
@@ -105,28 +150,28 @@ GameExecuter.prototype.streamControllerInput = function(client, playerId) {
     });
 
     client.on('controllerA', function(message) {
-        self.sendSequentialRequest('/playerCommand', {
+        self.sendSequentialRequest('playerCommand', {
             playerId: playerId,
             button: 'a',
             event: message
         });
     });
     client.on('controllerB', function(message) {
-        self.sendSequentialRequest('/playerCommand', {
+        self.sendSequentialRequest('playerCommand', {
             playerId: playerId,
             button: 'b',
             event: message
         });
     });
     client.on('controllerX', function(message) {
-        self.sendSequentialRequest('/playerCommand', {
+        self.sendSequentialRequest('playerCommand', {
             playerId: playerId,
             button: 'x',
             event: message
         });
     });
     client.on('controllerY', function(message) {
-        self.sendSequentialRequest('/playerCommand', {
+        self.sendSequentialRequest('playerCommand', {
             playerId: playerId,
             button: 'y',
             event: message
@@ -134,7 +179,7 @@ GameExecuter.prototype.streamControllerInput = function(client, playerId) {
     });
 
     client.on('controllerStart', function(message) {
-        self.sendSequentialRequest('/playerCommand', {
+        self.sendSequentialRequest('playerCommand', {
             playerId: playerId,
             button: 'start',
             event: message
@@ -185,7 +230,9 @@ GameExecuter.prototype.initRequest = function() {
     this.sendRequest('init', {
         serverUrl: "",
         width: self.screen.width,
-        height: self.screen.height
+        height: self.screen.height,
+        serverPort: self.server.locals.port,
+        serverPath: self.server.locals.path
     }, function() {
         self.timeCycleInterval = setInterval(function() {
             var elapsedTime = (new Date()).getTime() - self.previousTime;

@@ -18,13 +18,16 @@ var HEIGHT = 10;
 
 var server = express();
 
-var htmlPort = 3000 ;
+var htmlPort = 3000 ; var htmlPath = "" ;
 var socketIoPort = 3001;
 var browserScreenPort = 4444 ;
 
 var io = socketio.listen(socketIoPort);
 
-io.set('log level', 0);
+io.configure( function() 
+    {
+     io.set('log', false);
+    } ) ;
 
 
 server.configure(function() {
@@ -64,14 +67,16 @@ setTimeout(function() {
     var playerQueueManagement = (new PlayerQueueManagement()).init();
 
 
-    io.sockets.on('connection', function() {
-        self.playerQueueManagement.addConnectingPlayer(socket.id);
+    io.sockets.on('connection', function( socket ) {
+        playerQueueManagement.addConnectingPlayer(socket.id);
+        
+        socket.on('disconnect', function() {
+            playerQueueManagement.removeDisconnectingPlayer(socket.id);
+        });
     });
 
 
-    io.sockets.on('disconnect', function() {
-        self.playerQueueManagement.removeDisconnectingPlayer(socket.id);
-    });
+    
 
 
     gamePicker = (new GamePicker()).init(screen, io.sockets, server, playerQueueManagement);
@@ -198,7 +203,9 @@ setTimeout(function() {
 
     });
 
+    server.locals.port = htmlPort ;
+    server.locals.path = htmlPath ;
     server.listen(htmlPort);
-
+    
 
 }, 2000);

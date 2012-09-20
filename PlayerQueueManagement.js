@@ -11,6 +11,9 @@ PlayerQueueManagement.prototype.init = function() {
 };
 
 PlayerQueueManagement.prototype.startGame = function(playerLimit, onIntroducePlayerFunction) {
+
+    console.log( 'start game ' + playerLimit ) ;
+
     this.onIntroducePlayerFunction = onIntroducePlayerFunction;
 
     this.movePlayersToWaitingQueue();
@@ -19,16 +22,18 @@ PlayerQueueManagement.prototype.startGame = function(playerLimit, onIntroducePla
     this.playerLimit = playerLimit;
 
     while (this.canAddPlayer())
-
-    this.introduceNextPlayer();
+        this.introduceNextPlayer();
 
 
 };
 
 PlayerQueueManagement.prototype.movePlayersToWaitingQueue = function() {
+    console.log( 'move players to waiting queue ' + this.playingQueue.length ) ;
+    
     while (this.playingQueue.length > 0)
-
-    this.waitingQueue.push(this.playingQueue.shift());
+        this.waitingQueue.push(this.playingQueue.shift());
+    
+    console.log( 'moved players to waiting queue' ) ;
 };
 
 PlayerQueueManagement.prototype.endGame = function() {
@@ -42,6 +47,7 @@ PlayerQueueManagement.prototype.endGame = function() {
 };
 
 PlayerQueueManagement.prototype.canAddPlayer = function() {
+    console.log( 'this.waitingQueue.length ' + this.waitingQueue.length + ' this.playingQueue.length ' + this.playingQueue.length ) ;
     return this.waitingQueue.length > 0 && this.playingQueue.length < this.playerLimit;
 }
 
@@ -53,20 +59,29 @@ PlayerQueueManagement.prototype.addConnectingPlayer = function(id) {
 };
 
 PlayerQueueManagement.prototype.killPlayer = function(id) {
-    var killedPlayer = this.playingQueue.splice(this.waitingQueue.indexOf(id), 1);
+    console.log( 'before kill player' ) ;
+    this.testPrint() ;
+
+    var killedPlayer = this.playingQueue.splice(this.playingQueue.indexOf(id), 1)[0];
+    
+    console.log( 'KILLED PLAYER ' + killedPlayer ) ;
 
     this.waitingQueue.push(killedPlayer);
 
     if (this.canAddPlayer())
-
-    this.introduceNextPlayer();
+        this.introduceNextPlayer();
+        
+    console.log( 'after kill player' ) ;
+    this.testPrint() ;
 };
 
 
 PlayerQueueManagement.prototype.introduceNextPlayer = function() {
+
     var nextPlayer = this.waitingQueue.shift();
     this.playingQueue.push(nextPlayer);
 
+    console.log( 'INTRODUCING NEXT PLAYER ' + nextPlayer ) ;
 
     this.onIntroducePlayerFunction(nextPlayer);
 
@@ -84,6 +99,18 @@ PlayerQueueManagement.prototype.removeDisconnectingPlayer = function(id) {
 
 
 };
+
+
+PlayerQueueManagement.prototype.testPrint = function()
+{
+    console.log( 'playing queue' ) ;
+    for( var i in this.playingQueue )
+        console.log( this.playingQueue[ i ] ) ;
+
+    console.log( 'waiting queue' ) ;
+    for( var i in this.waitingQueue )
+        console.log( this.waitingQueue[ i ] ) ;
+} ;
 
 
 module.exports = PlayerQueueManagement;

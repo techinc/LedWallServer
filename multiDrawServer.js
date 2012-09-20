@@ -4,16 +4,17 @@ var querystring = require('querystring');
 
 
 var COLOR_SPEED = 1 / 255;
-var MOVE_SPEED = 1 / 255;
+var MOVE_SPEED = 400 / 255;
 
 var FRAME_DURATION = 50;
 
 
-var screen;
+var screen = "uninitialized" ;
 
 var playerSet;
 
-
+var serverPort ;
+var serverPath ;
 http.createServer(function(req, res) {
     if (req.url == '/init') {
         var responseData = "";
@@ -26,10 +27,11 @@ http.createServer(function(req, res) {
 
             var initObj = JSON.parse(responseData);
 
-            console.log(initObj);
-
             var width = initObj.width;
             var height = initObj.height;
+            
+            serverPort = initObj.serverPort ;
+            serverPath = initObj.serverPath ;
 
             screen = (new AbstractScreen()).init(width, height);
 
@@ -40,11 +42,10 @@ http.createServer(function(req, res) {
             res.end();
         });
     } else if (req.url == '/timeCycle') {
-        console.log('timeCycle');
 
         var screenCopy = (new AbstractScreen()).init(screen.width, screen.height);
 
-        screenCopy.fromObject(JSON.parse(JSON.stringify(screen.toObject)));
+        screenCopy.fromObject(JSON.parse(JSON.stringify(screen.toObject() )));
 
         for (var i in playerSet) {
             var p = playerSet[i];
@@ -57,10 +58,10 @@ http.createServer(function(req, res) {
             content: screenCopy.toObject()
         }));
     } else if (req.url == '/stop') {
-        clearInterval(animationInterval);
         console.log('STOP');
         res.end();
     } else if (req.url == '/introduce') {
+
         var responseData = "";
 
         req.on('data', function(chunk) {
@@ -76,6 +77,7 @@ http.createServer(function(req, res) {
             playerSet[playerId] = (new MultiDrawer()).init();
 
             res.end();
+            
         });
     } else if (req.url == '/removePlayer') {
         var responseData = "";
@@ -107,28 +109,40 @@ http.createServer(function(req, res) {
 
             var command = JSON.parse(responseData);
 
-            console.log(command);
-
             var player = playerSet[command.playerId];
-
+            
+            if( !player ) { res.end() ; return ; }
 
             if (command.button == 'start' && command.event == 'down') {
+                
                 var options = {
                     host: req.connection.remoteAddress,
                     port: serverPort,
-                    path: serverPath + '/' + killPlayer,
+                    path: serverPath + '/killPlayer',
                     method: 'POST'
                 };
 
-                req.on('error', function(e) {
-                    console.log('problem with request: ' + e.message);
-                });
+                console.log( command ) ;
+                console.log( options ) ;
 
-                req.write(querystring.stringify({
-                    playerId: command.playerId
-                }));
+                var request = http.request(options, function(res) {
+                        res.setEncoding('utf8');
+                    });
 
-                req.end();
+                    request.on('error', function(e) {
+                        console.log('problem with request: ' + e.message);
+                    });
+
+
+                request.write(querystring.stringify( {playerId: command.playerId }));
+                request.end();
+
+
+                delete playerSet[command.playerId] ;
+
+                res.end();
+                
+                
 
             } else if (player.mode == "move") switch (command.button) {
             case 'up':
@@ -232,7 +246,7 @@ http.createServer(function(req, res) {
     }
 
 
-});
+}).listen( 6969, 'localhost') ;
 
 function MultiDrawer() {};
 
@@ -253,7 +267,10 @@ MultiDrawer.prototype.init = function() {
 
     this.moveHorizontalInterval = false;
     this.moveVerticalInterval = false;
+    
+    this.mode = "move" ;
 
+    return this ;
 };
 
 MultiDrawer.prototype.putPixel = function() {
@@ -276,7 +293,8 @@ MultiDrawer.prototype.moveHorizontal = function(direction) {
     this.stopMoveHorizontal();
 
     this.moveHorizontalInterval = setInterval(function() {
-        self.x = direction * MOVE_SPEED * FRAME_DURATION / 1000;
+        self.x += direction * MOVE_SPEED * FRAME_DURATION / 1000;
+
 
         while (self.x < 0) self.x += screen.width;
         while (self.x >= screen.width) self.x -= screen.width;
@@ -294,10 +312,11 @@ MultiDrawer.prototype.stopMoveHorizontal = function() {
 MultiDrawer.prototype.moveVertical = function(direction) {
     var self = this;
 
-    stopMoveVertical();
+    this.stopMoveVertical();
 
     this.moveVerticalInterval = setInterval(function() {
-        self.y = direction * MOVE_SPEED * FRAME_DURATION / 1000;
+        self.y += direction * MOVE_SPEED * FRAME_DURATION / 1000;
+
 
         while (self.y < 0) self.y += screen.width;
         while (self.y >= screen.width) self.y -= screen.width;
@@ -421,3 +440,12 @@ MultiDrawer.prototype.stopAllIntervals = function() {
     this.stopBlue();
 
 };
+
+
+function clearScreen() {
+    for (var x = 0; x < screen.width; x++)
+    for (var y = 0; y < screen.height; y++) {
+        screen.setColor(x, y, [0.1, 0.1, 0.4]);
+    };
+};
+
