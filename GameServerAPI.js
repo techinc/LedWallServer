@@ -42,7 +42,7 @@ GameServerAPI.prototype.init = function( port ) // initCallback, timeCycleCallba
         else if (req.url == '/removePlayer')   { self.processRequest( req, res, function( data ) { self.removePlayer( data ) ; } ) ; } 
         else if (req.url == '/playerCommand')  { self.processRequest( req, res, function( data ) { self.playerCommand( data ) ; } ) ; } 
      } ).listen( port, 'localhost') ; 
-    
+     return this ;
     } ;
 
 
