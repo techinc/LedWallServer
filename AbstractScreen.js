@@ -32,4 +32,12 @@ AbstractScreen.prototype.fromObject = function(abstractScreenAsObject) {
 };
 
 
+AbstractScreen.prototype.clear = function()
+    {
+     for (var x = 0; x < this.pixelMap.length; x++)
+     for (var y = 0; y < this.pixelMap[0].length; y++) 
+        this.setColor(x, y, [ 0, 0, 0 ]);
+    
+    } ;
+
 module.exports = AbstractScreen;

@@ -256,8 +256,9 @@ GameExecuter.prototype.timeCycleRequest = function(elapsedTime) {
         var obj = JSON.parse(queryData);
 
         if (obj.type == "bitmap") self.screen.fromObject(obj.content);
+        
+        console.log( 'TIME_CYCLE COMPLETE' ) ; 
     });
-
 
 };
 
