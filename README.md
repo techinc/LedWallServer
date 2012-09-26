@@ -28,3 +28,10 @@ The third option is to use Foreman to generate an Upstart config file or initscr
 [Norman]: http://github.com/josh/norman
 [Foreman]: http://ddollar.github.com/foreman/
 [LEDLightDistrictDriver]: http://github.com/guidocalvano/LEDLightDistrictDriver
+
+Controlling the screen
+---
+
+If you want to interact with the screen go to 10.168.0.112:3000
+
+You will be presented with a snes controller. The buttons work. You can also use arrow keys of your keyboard and the following keys zxcvbn.
