@@ -91,7 +91,9 @@ Your server does not receive any information, but is expected to return informat
 It is a table of colors. A color is an array containing three real numbers in the range of 0 to 1. The table is an array indexed by x coordinate, containing an array indexed by y coordinate. The y coordinate indexed array contains the colors. Example
 
 [ [ [0,0,0], [1,1,1],[0,0,0],[0,0,0] ],
+
   [ [1,1,1], [1,1,1],[1,1,1],[1,1,1] ],
+  
   [ [0,0,0], [1,1,1],[0,0,0],[0,0,0] ] ]
 
 This contains an image of a white arrow, pointing UPWARD (not sideways, as it appears to be), in an image that has width 3 and height 4. 
@@ -101,7 +103,9 @@ To send this red image return the following string:
 { "type": "bitmap",
   "content":
 [ [ [0,0,0], [1,1,1],[0,0,0],[0,0,0] ],
+
   [ [1,1,1], [1,1,1],[1,1,1],[1,1,1] ],
+  
   [ [0,0,0], [1,1,1],[0,0,0],[0,0,0] ] ] }
 
 NOTE: you will probably be required to return an image that is 12 by 10, because those are the dimensions of the screen! The actual dimensions are passed when /init is called on your server.
