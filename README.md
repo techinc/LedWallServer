@@ -113,6 +113,59 @@ NOTE: you will probably be required to return an image that is 12 by 10, because
 That's it.
 
 
+Reference for building a game server
+---
+
+/init 
+
+A json file is passed:
+
+{ 
+"width":  (width of the screen),
+"height": (height of the screen),
+"serverHost": (the host of the server),
+"serverPort": (the port of the server),
+"serverPath": (the path on the host where the server expect you to information)
+}
+
+/stop
+
+nothing is passed or required. It just informs that you should stop the game.
+
+/timeCycle
+
+see the section on building an animation server.
+
+
+/introduce
+
+a json string with an id for a new player that should be introduced:
+
+example: "AFSefsasDSffae234wsff34f34f"
+
+/removePlayer
+
+a json string with an id for a  player that should be removed:
+
+example: "AFSefsasDSffae234wsff34f34f"
+
+
+/playerCommand
+
+a json string containing a player command is passed
+
+{ "button": "left",
+  "event": "up" }
+  
+  values for "button" are "up", "down", "left", "right", "a", "b", "x","y", "start" (select is reserved)
+  values for "event" are "up" and "down"
+  
+  
+ To kill a player do a post request at 
+ 
+ (serverHost):(serverPort)/(serverPath)/killPlayer
+
+with value "playerId" set to the id of the player that must be killed.
 
 
 
