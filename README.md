@@ -29,6 +29,17 @@ The third option is to use Foreman to generate an Upstart config file or initscr
 [Foreman]: http://ddollar.github.com/foreman/
 [LEDLightDistrictDriver]: http://github.com/guidocalvano/LEDLightDistrictDriver
 
+Run the led wall server at home
+---
+
+To run the server at home, with a screen in a browser instead of the led wall, start the server using 
+
+node server.js --runAtHome
+
+The screen can be found at localhost:3000/screen
+
+If someone can create some forman file for this that would be awesome
+
 Controlling the screen
 ---
 
