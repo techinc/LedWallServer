@@ -115,6 +115,21 @@ That's it.
 
 Reference for building a game server
 ---
+To build a game server you need to implement a few urls and add a json file to the games dir of the led wall server.
+
+the json file
+
+{
+"host": (host),
+"port": (port),
+"path": (path),
+
+"frameDuration": (frame duration in milliseconds),
+
+"playerLimit": (maximum number of players allowed in game at the same time)
+}
+
+
 
 /init 
 
