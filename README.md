@@ -36,6 +36,8 @@ To run the server at home, with a screen in a browser instead of the led wall, s
 
 node server.js --runAtHome
 
+Obviously you should also run the servers with the animation or game that you want to start.
+
 The screen can be found at localhost:3000/screen
 
 If someone can create some forman file for this that would be awesome
@@ -46,6 +48,22 @@ Controlling the screen
 If you want to interact with the screen go to 10.168.0.112:3000
 
 You will be presented with a snes controller. The buttons work. You can also use arrow keys of your keyboard and the following keys zxcvbn.
+
+Finding the computer that runs the screen
+---
+
+You can find it at vijzelstraat 68, next to mediamatic. Turn right after you enter, and go through the doors to enter the social space.
+Turn right again. You now see the screen modules mounted to the glass cube wall in front of you. Below the lower left corner of the screen there is a coffee table with a monitor and a keyboard. 
+Below the coffee table is  the computer that controls the screen. It is hooked into the monitor and the keyboard.
+
+The user is LedWall. In the home directory of this user in the directory LedWallServer you will find the code. 
+
+Just type git pull to get the most recent code.
+
+To get the password for the LedWall user send me an email at g U id o cA lv a n o AT y AH oo DOT com. All lower case letters.
+
+
+
 
 
 
