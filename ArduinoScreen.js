@@ -65,6 +65,9 @@ ArduinoScreen.prototype.setColor = function(x, y, color) {
 
     // console.log( 'x: ' + x +  ' y '  + y + ' time ' + ( new Date() ).getTime() ) ; 
 
+     x = this.width - 1 - x ;
+
+
     var rowStartIndex = x * this.height;
 
     var relativeColumnIndex;

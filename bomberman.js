@@ -124,7 +124,7 @@ BlastIncrease.prototype.init = function( map, x, y )
      
      this.type.unshift( 'BlastIncrease' ) ;
      
-     this.color = [ 1, 1, .7 ] ;
+     this.color = [ .7, .7, 0 ] ;
      
      
      game.timeQueue.push( this ) ;
@@ -161,7 +161,7 @@ BombIncrease.prototype.init = function( map )
      
      this.type.unshift( 'BombIncrease' ) ;
      
-     this.color = [ 1, .7, 1 ] ;
+     this.color = [ 0, .7, 0 ] ;
      
      game.timeQueue.push( this ) ;
      
@@ -427,7 +427,7 @@ Game.prototype.start = function( width, height )
      for( var y = 1 ; y < this.map.height ; y+=2 )
         {
          if( x == 7 ) x = 6 ; 
-         if( y == 5 ) y = 6 ;          
+         if( y == 5 ) y = 6     ;          
          ( new SolidBlock() ).init( this.map, x, y, [1,1,1] ) ;
         }
         
@@ -435,7 +435,7 @@ Game.prototype.start = function( width, height )
         {
          var l = this.map.startingLocation() ;
          
-         ( new WeakBlock() ).init( this.map, l.x, l.y, [.5,.5,1] ) ;         
+         ( new WeakBlock() ).init( this.map, l.x, l.y, [0,0,.6] ) ;         
         } ;
 
 
@@ -517,8 +517,8 @@ Game.prototype.playerCommand = function( command )
         {
          switch( command.button )
             {
-             case 'up':      player.vy =  1 ; player.vx =  0 ; break ;
-             case 'down':    player.vy = -1 ; player.vx =  0 ; break ;  
+             case 'up':      player.vy = -1 ; player.vx =  0 ; break ;
+             case 'down':    player.vy =  1 ; player.vx =  0 ; break ;  
              case 'left':    player.vx = -1 ; player.vy =  0 ; break ;
              case 'right':   player.vx =  1 ; player.vy =  0 ; break ;
              case 'a':       player.dropBomb() ; break ;
