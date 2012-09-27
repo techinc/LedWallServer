@@ -112,7 +112,7 @@ WeakBlock.prototype.init = function( map, x, y, color )
 
 function BlastIncrease() {}
 
-BlastIncrease.FRAMES_PER_BLAST_INCREASE = 10 ;
+BlastIncrease.FRAMES_PER_BLAST_INCREASE = 20 ;
 
 BlastIncrease.prototype = new MapObject() ;
 
@@ -149,7 +149,7 @@ BlastIncrease.prototype.timeCycle = function()
 
 function BombIncrease() {}
 
-BombIncrease.FRAMES_PER_BOMB_INCREASE = 10 ;
+BombIncrease.FRAMES_PER_BOMB_INCREASE = 20 ;
 
 BombIncrease.prototype = new MapObject() ;
 
@@ -507,8 +507,7 @@ Game.prototype.removePlayer = function( playerId )
     
 Game.prototype.playerCommand = function( command )
     {
-     // console.log( command ) ;
-    
+     
      var player = this.bombermanSet[command.playerId];
           
      if( !player ) { console.log( 'NO PLAYER' ) ; return ; }
