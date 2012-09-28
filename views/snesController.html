@@ -17,26 +17,28 @@ ControllerButton.prototype.init = function( symbol, socket, keyCode )
 	 this.socket = socket ;
 
 	 this.isDown = false ;
+     
+     this.symbol = symbol ;
 
 	 $( '#' + symbol ).mousedown( 
 		function()
 			{
-			 self.socket.emit( symbol, 'down' ) ;
+			 self.socket.emit( self.symbol, 'down' ) ;
 			 self.isDown = true ;
 
 
-			 console.log( symbol + ' down' ) ;
+			 console.log( self.symbol + ' down' ) ;
 			}
 	 ) ;
 
 	 $( '#' + symbol ).mouseup( 
 		function()
 			{
-             self.socket.emit( symbol, 'up' ) ;
+             self.socket.emit( self.symbol, 'up' ) ;
 
 			 self.isDown = false ;
 
-			 console.log( symbol + ' up' ) ;
+			 console.log( self.symbol + ' up' ) ;
 			}
 	 ) ;
 
@@ -48,9 +50,9 @@ ControllerButton.prototype.init = function( symbol, socket, keyCode )
 
 
 			 self.isDown = false ;
-			 self.socket.emit( symbol, 'up' ) ;
+			 self.socket.emit( self.symbol, 'up' ) ;
 
-			 console.log( symbol + ' up' ) ;
+			 console.log( self.symbol + ' up' ) ;
 			}
 	 ) ;
      
@@ -59,8 +61,8 @@ ControllerButton.prototype.init = function( symbol, socket, keyCode )
             {
              if( event.keyCode == keyCode )
                 {
-                 self.socket.emit( symbol, 'down' ) ;
-                 console.log( symbol + ' down' ) ;
+                 self.socket.emit( self.symbol, 'down' ) ;
+                 console.log( self.symbol + ' down' ) ;
                 }
             } ) ;
      
@@ -69,13 +71,19 @@ ControllerButton.prototype.init = function( symbol, socket, keyCode )
             {
              if( event.which == keyCode )
                 {
-                 self.socket.emit( symbol, 'up' ) ;
-                 console.log( symbol + ' up' ) ;
+                 self.socket.emit( self.symbol, 'up' ) ;
+                 console.log( self.symbol + ' up' ) ;
                 }
             } ) ;
             
 	 return this ;
 	} ;
+
+ControllerButton.prototype.setSymbol = function( symbol )
+    {
+     this.symbol = symbol ;
+    } ;
+
 
 function Controller() {}
 
@@ -95,9 +103,26 @@ Controller.prototype.init = function( socket )
 	 this.start = ( new ControllerButton() ).init( 'controllerStart', socket,  78) ; // n
 
 
+     var self = this ;
+
+	 $( '#controllerL' ).mousedown( function() { self.swapLeftAndRight() ; } ) ;
+	 $( '#controllerR' ).mousedown( function() { self.swapLeftAndRight() ; } ) ;
+
 
 	 return this ;
 	} ;
+
+
+Controller.prototype.swapLeftAndRight = function()
+    {
+     var swapMe = this.left.symbol ;
+    
+     this.left.setSymbol( this.right.symbol ) ;
+     
+     this.right.setSymbol( swapMe ) ;
+    
+    } ;
+
 
 var controller ;
 $( document ).ready( function()
@@ -135,6 +160,9 @@ $( document ).ready( function()
 
 <a id="controllerStart" href="javascript:void(0);"> </a>
 <a id="controllerSelect" href="javascript:void(0);"> </a>
+
+<a id="controllerL" href="javascript:void(0);"> </a>
+<a id="controllerR" href="javascript:void(0);"> </a>
 
 <div id="message" > connecting </div>
 </div>

@@ -117,6 +117,29 @@ background-color: transparent;
  left: 245px ;
 }
 
+
+
+#controllerL
+{
+ width: 140px ;
+ height: 40px ;
+
+ top: 2px;
+ left: 50px ;
+}
+
+
+
+#controllerR
+{
+ width: 140px ;
+ height: 40px ;
+
+ top: 2px;
+ left: 350px ;
+}
+
+
 #message
 {
  color: #303149;
