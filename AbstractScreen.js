@@ -32,6 +32,35 @@ AbstractScreen.prototype.fromObject = function(abstractScreenAsObject) {
 };
 
 
+AbstractScreen.prototype.validObject = function( obj )
+{
+    if( obj == undefined ) return "AbstractScreen: column set is undefined" ;
+
+    if( obj.constructor != Array ) return "AbstractScreen: column set is not an array" ;
+        
+    for( var x = 0 ; x < this.width ; x++ )
+        {
+         if( obj[ x ] == undefined ) return "AbstractScreen: column " + x + " is undefined"
+         if( obj[ x ].constructor != Array ) return "AbstractScreen: column " + x + " is not an array" ;
+        
+         for( var y = 0 ; y < this.height ; y++ )
+            {
+             if( obj[ x ][ y ] == undefined ) return "AbstractScreen: color at " + x + " " + y + " is undefined"
+             if( obj[ x ][ y ].constructor != Array ) return "AbstractScreen: position " + x + " " + y + " is not an array" ;
+            
+             if( obj[ x ][ y ].length != 3 ) return "AbstractScreen: wrong number of colors" ;
+             
+             if( isNaN( obj[ x ][ y ][ 0 ] ) ) return "AbstractScreen: red sub pixel at "   + x + " " + y+" has incorrect type: " + typeof obj[ x ][ y ] ; 
+             if( isNaN( obj[ x ][ y ][ 1 ] ) ) return "AbstractScreen: green sub pixel at " + x + " " + y+" has incorrect type: " + typeof obj[ x ][ y ] ; 
+             if( isNaN( obj[ x ][ y ][ 2 ] ) ) return "AbstractScreen: blue sub pixel at "  + x + " " + y+" has incorrect type: " + typeof obj[ x ][ y ] ; 
+
+            }
+        
+        }
+    
+} ) ;
+
+
 AbstractScreen.prototype.clear = function()
     {
      for (var x = 0; x < this.pixelMap.length; x++)

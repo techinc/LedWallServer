@@ -94,39 +94,50 @@ setTimeout(function() {
     // THE WEB PAGES FOR ADDING YOUR GAME TO THE SCREEN
 
     server.get('/list', function(req, res) {
+    
+        error = '' ;
+    
         var getInfo = url.parse(req.url, true);
         console.log('LIST ' + JSON.stringify(getInfo));
 
-        if (getInfo.query && getInfo.query.fileName) {
+
+        if (getInfo.query && getInfo.query.fileName ) {
             console.log('ADDING FILE');
 
-            try {
-                var gameInfoString = fs.readFileSync('./games/' + getInfo.query.fileName);
-            } catch (err) {
-                gameInfoString = false
+            if( !getInfo.query.filename.match( '^[a-zA-Z]$' ) ) {
+                try {
+                    var gameInfoString = fs.readFileSync('./games/' + getInfo.query.fileName);
+                } catch (err) {
+                    gameInfoString = false
+                }
+
+                var gameInfo = getInfo.query;
+
+                var fileName = getInfo.query.fileName;
+
+                delete gameInfo.fileName;
+
+                if (gameInfoString) gameInfo.image = JSON.parse(gameInfoString).image;
+
+                console.log('./games/' + fileName);
+
+                fs.writeFileSync('./games/' + fileName, JSON.stringify(gameInfo));
+
+                gamePicker.loadGames();
             }
-
-            var gameInfo = getInfo.query;
-
-            var fileName = getInfo.query.fileName;
-
-            delete gameInfo.fileName;
-
-            if (gameInfoString) gameInfo.image = JSON.parse(gameInfoString).image;
-
-            console.log('./games/' + fileName);
-
-            fs.writeFileSync('./games/' + fileName, JSON.stringify(gameInfo));
-
-            gamePicker.loadGames();
+            else
+                error = 'server/list: illegal filename' ;
         }
 
-
+        // load the .json files in ./games
         var fileSet = fs.readdirSync('./games');
 
         console.log(fileSet);
-
+        
+        
+        // format the found data to pass as vars to html template
         var fileSetForView = {
+            error: error,
             fileSet: []
         }
 
@@ -144,6 +155,7 @@ setTimeout(function() {
 
     server.get('/edit', function(req, res) {
         console.log('EDIT');
+        var error = '' ;
 
         var getInfo = url.parse(req.url, true);
         var gameInfoString = false;
@@ -157,6 +169,7 @@ setTimeout(function() {
             view = JSON.parse(gameInfoString);
             view.fileName = getInfo.query.fileName; // "getInfo.filename" ;
         } else view = {
+            error: error,
             fileName: getInfo.query.fileName,
             host: "",
             port: "",

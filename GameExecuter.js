@@ -56,9 +56,10 @@ GameExecuter.prototype.init = function(screen, gameInfo, sockets, server, player
             for( var i in clients )
                 if( clients[ i ].id == playerId )      
                     self.stopStreamingControllerInput( clients[ i ] ) ;
-                    
+            
+            // playerId need not be checked on correctness because it can be any string.
+            
             self.playerQueueManagement.killPlayer( playerId ); // don't forget to remove it from playerQueueManagement as well
-
         } ) ;
         
         res.end() ;
@@ -266,16 +267,35 @@ GameExecuter.prototype.initRequest = function() {
 
 
 GameExecuter.prototype.timeCycleRequest = function(elapsedTime) {
+
+    // most of this function is just  error checking
+    // in essence it does two things: 
+    // 1. ask for a timeCycle
+    // 2. actually load the next frame
+
     var self = this;
 
-    this.sendRequest('timeCycle', {
+    this.sendRequest('timeCycle', { // ask for a timeCycle
         elapsedTime: elapsedTime
     }, function(queryData) {
 
-        var obj = JSON.parse(queryData);
+        var obj = JSON.parse(queryData); // get the next frame
 
-        if (obj.type == "bitmap") self.screen.fromObject(obj.content);
-        
+        if( obj.type == undefined ) { this.sendError( 'GameExecuter.timeCycleRequest: type undefined in response timeCycleRequest' ) ; return ; }
+
+        switch( obj.type )
+            {
+             case "bitmap" :
+             
+                if( screen.validObject( obj.content ) != 'correct' ){ this.sendError( screen.validObject( obj.content ) ) ; }
+             
+                   self.screen.fromObject(obj.content); // actually load the next frame
+                break ;
+             default:
+                this.sendError( 'GameExecuter.timeCycleRequest: unknown message type: ' + obj.type ) ;
+                return ;
+            }
+
         console.log( 'TIME_CYCLE COMPLETE' ) ; 
     });
 
@@ -331,8 +351,16 @@ GameExecuter.prototype.sendRequest = function(path, message, callback) {
 
     req.write(JSON.stringify(message));
     req.end();
-
 };
+
+
+GameExecuter.prototype.sendError = function( errorMessage ) {
+
+    console.log( errorMessage ) ;
+    
+    this.sendRequest( 'error', errorMessage, function() {} ) ;
+
+} ;
 
 
 module.exports = GameExecuter;
