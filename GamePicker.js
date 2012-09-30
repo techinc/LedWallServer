@@ -5,25 +5,20 @@ function GamePicker() {};
 
 
 GamePicker.prototype.init = function(screen, sockets, server, playerQueueManagement) {
-    console.log('init game picker');
+
     var self = this;
 
     this.screen = screen;
 
-    // this.gameInfoSet = fs.readdirSync( './games' ) ;
-
-    this.loadGames();
-
-    // this.selectedGameInfoIndex = 0 ;
-
-    // this.selectGameInfo( 0 ) ;
+    this.loadGames(); // load the games in the game dir
 
     this.sockets = sockets;
 
+    // this is just to make it easier to pass them as callback functions
     this.boundListenToSocketForNavigation       = function( socket ) { self.listenToSocketForNavigation( socket ) }  ;
     this.boundListenToAllClientsForNavigation   = function( socket ) { self.listenToAllClientsForNavigation( socket ) } ;
 
-    this.listenToAllClientsForNavigation();
+    this.listenToAllClientsForNavigation(); // when the GamePicker is started, it runs the menu, so controllers should navigate the menu
     
       
     this.server = server;
@@ -32,11 +27,13 @@ GamePicker.prototype.init = function(screen, sockets, server, playerQueueManagem
 };
 
 GamePicker.prototype.loadGames = function() {
-    this.gameInfoSet = fs.readdirSync('./games').filter(function (name) {
+    this.gameInfoSet = fs.readdirSync('./games').filter(function (name) { // load all games, that are contained in files that do not start with a '.' in their name
         return name[0]!='.';
     });
 
-    if (!this.playingGame) this.selectGameInfo(!isNaN(this.selectedGameInfoIndex) ? this.selectedGameInfoIndex : 0);
+    // the following line takes into account that a new game might be added to the menu while GamePicker is running
+    // if no games are played select a game. When selecting this game, if no game is currently selected, select game 0, otherwise reselect the current game.
+    if (!this.playingGame) this.selectGameInfo(!isNaN(this.selectedGameInfoIndex) ? this.selectedGameInfoIndex : 0); 
 }
 
 
@@ -47,18 +44,13 @@ GamePicker.prototype.listenToAllClientsForNavigation = function() {
     for (var i in clients) {
         clients[i].removeAllListeners();
 
-        this.listenToSocketForNavigation(clients[i]);
+        this.listenToSocketForNavigation(clients[i]); // all current players should be able to navigate the menu
     }
 
-    if( this.boundListenToAllClientsForGameExit )
-        this.sockets.removeListener('connection', this.boundListenToAllClientsForGameExit );
+    if( this.boundListenToAllClientsForGameExit ) // 
+        this.sockets.removeListener('connection', this.boundListenToAllClientsForGameExit ); // the select button on controllers of connecting players should no longer mean "exit game" either
 
-    this.sockets.on( 'connection', this.boundListenToSocketForNavigation ) ;
-
-    // this.sockets.on('connection', function(socket) {
-    //    self.listenToSocketForNavigation(socket);
-    // });
-
+    this.sockets.on( 'connection', this.boundListenToSocketForNavigation ) ; // any connecting player should be given control to navigate too
 };
 
 
@@ -68,16 +60,16 @@ GamePicker.prototype.listenToAllClientsForGameExit = function() {
 
     var clients = this.sockets.clients();
     for (var i in clients) {
-        clients[i].removeAllListeners();
+        clients[i].removeAllListeners(); 
 
-        this.listenToSocketForGameExit(clients[i]);
+        this.listenToSocketForGameExit(clients[i]); // all current players should be able to quit the game by pressing select
     }
 
     if( this.boundListenToSocketForNavigation )
-        this.sockets.removeListener('connection', this.boundListenToSocketForNavigation);
+        this.sockets.removeListener('connection', this.boundListenToSocketForNavigation);  // the buttons on controllers of connecting players should no longer navigate the menu
 
     this.sockets.on('connection', function(socket) {
-        self.listenToSocketForGameExit(socket);
+        self.listenToSocketForGameExit(socket); // any connecting player should be able to quit the game by pressing select
     });
 
 };
@@ -85,6 +77,8 @@ GamePicker.prototype.listenToAllClientsForGameExit = function() {
 
 GamePicker.prototype.listenToSocketForNavigation = function(socket) {
     var self = this;
+
+    // left and right move through the games in the menu
 
     socket.on('controllerLeft', function(data) {
         if (data == 'down') self.selectGameInfo(self.selectedGameInfoIndex - 1);
@@ -94,11 +88,14 @@ GamePicker.prototype.listenToSocketForNavigation = function(socket) {
         if (data == 'down') self.selectGameInfo(self.selectedGameInfoIndex + 1);
     });
 
+
+    // "a" executes a game
+
     socket.on('controllerA', function(data) {
         if (data == 'down') {
-            self.listenToAllClientsForGameExit();
+            self.listenToAllClientsForGameExit(); // during a game, select means quit the game. This is dealt with in this.listenToAllClientsForGameExit() ;
 
-            self.isPlayingGame = true;
+            self.isPlayingGame = true; // is this line actually necessary?
             self.currentGameExecuter = (new GameExecuter()).init(self.screen, self.selectedGameInfo, self.sockets, self.server, self.playerQueueManagement);
         }
     });
@@ -109,24 +106,28 @@ GamePicker.prototype.listenToSocketForNavigation = function(socket) {
 GamePicker.prototype.listenToSocketForGameExit = function(socket) {
     var self = this;
 
+    // if select is pressed, stop the game, go back to the menu and make the controllers navigate the menu rather than control the game
+
     socket.on('controllerSelect', function(data) {
         if (data == 'down') {
 
 
             self.currentGameExecuter.stopRequest(function() {
                 console.log("STOP REQUEST INVOKED");
-                self.isPlayingGame = true;
+                self.isPlayingGame = true; // is this line actually necessary?
 
-                var screenshot = self.screen.toObject();
+                // update the screenshot of the game
+                var screenshot = self.screen.toObject(); 
 
-                self.selectedGameInfo.image = screenshot;
+                self.selectedGameInfo.image = screenshot; 
 
                 fs.writeFileSync('./games/' + self.gameInfoSet[self.selectedGameInfoIndex], JSON.stringify(self.selectedGameInfo));
 
 
+                // start listening to the controllers for navigation again
                 self.listenToAllClientsForNavigation();
 
-                // self.selectGameInfo( self.selectedGameInfoIndex ) ;
+                // and load any new games
                 self.loadGames();
             });
 
@@ -161,24 +162,25 @@ GamePicker.prototype.removeNavigationListeners = function() {
 
 
 GamePicker.prototype.selectGameInfo = function(index) {
-    if (index >= this.gameInfoSet.length) index = 0;
-    if (index < 0) index = this.gameInfoSet.length - 1;
+
+    if (index >= this.gameInfoSet.length) index = 0;    // if trying to select an index larger than the current number games, select the first game
+    if (index < 0) index = this.gameInfoSet.length - 1; // if trying to select a game before the first, select the last
 
 
-    this.selectedGameInfo = JSON.parse(fs.readFileSync('./games/' + this.gameInfoSet[index]));
+    this.selectedGameInfo = JSON.parse(fs.readFileSync('./games/' + this.gameInfoSet[index])); // get info on the selected game
 
     console.log( './games/' + this.gameInfoSet[index] ) ;
     console.dir( this.selectedGameInfo ) ;
 
-    if (!this.selectedGameInfo.image) {
+    if (!this.selectedGameInfo.image) { // if the game has no image, give it the place holder image with the question mark
         this.selectedGameInfo.image = JSON.parse(fs.readFileSync('./public/img/screenshotUnavailable.asc'));
         fs.writeFileSync('./games/' + this.gameInfoSet[index], JSON.stringify(this.selectedGameInfo));
     }
 
 
-    this.screen.fromObject(this.selectedGameInfo.image);
+    this.screen.fromObject(this.selectedGameInfo.image); // present the image associated with the game
 
-    this.selectedGameInfoIndex = index;
+    this.selectedGameInfoIndex = index; // and set the index of the selected game to the actually selected game
 
 };
 module.exports = GamePicker;

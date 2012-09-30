@@ -20,6 +20,9 @@ ControllerButton.prototype.init = function( symbol, socket, keyCode )
      
      this.symbol = symbol ;
 
+
+     // every mouse up/down event and every key up/down event is sent to the server, with the symbol of the sending button
+
 	 $( '#' + symbol ).mousedown( 
 		function()
 			{
@@ -89,6 +92,10 @@ function Controller() {}
 
 Controller.prototype.init = function( socket )
 	{
+     // hook up the buttons, the fist arg is the symbol used to target the a tag the button is connected with, which is also the symbol
+     // sent to the server. The last argument is the keyboard scan code that triggers the button. The second argument is the socket it
+     // should send the key up/down events too.
+     
 	 this.up = ( new ControllerButton() ).init( 'controllerUp', socket, 38 ) ;
 	 this.down = ( new ControllerButton() ).init( 'controllerDown', socket, 40  ) ;
 	 this.left = ( new ControllerButton() ).init( 'controllerLeft', socket, 37  ) ;
@@ -105,6 +112,7 @@ Controller.prototype.init = function( socket )
 
      var self = this ;
 
+     // when pressing L or R, invert left and right, so the player can invert controls when behind the screen
 	 $( '#controllerL' ).mousedown( function() { self.swapLeftAndRight() ; } ) ;
 	 $( '#controllerR' ).mousedown( function() { self.swapLeftAndRight() ; } ) ;
 
@@ -127,6 +135,7 @@ Controller.prototype.swapLeftAndRight = function()
 var controller ;
 $( document ).ready( function()
 	{
+     // create the socket connection to the server ( {{socketIoPor}} or the port number below is a var passed to this template )
      var socket = io.connect( 'http://' + location.hostname + ':'+ '{{socketIoPort}}' ) ;
      
      socket.on( 'setMessage', function( data )
@@ -146,7 +155,7 @@ $( document ).ready( function()
 
 <body>
 <div id="controller">
-
+<!-- these are invisible a tags that cover the buttons on the snesController image (see the css file) -->
 <a id="controllerUp" href="javascript:void(0);"  ></a>
 <a id="controllerDown" href="javascript:void(0);"  ></a>
 <a id="controllerLeft" href="javascript:void(0);"  ></a>

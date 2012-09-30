@@ -15,14 +15,13 @@
 		{
          console.log( 'DOC READY' ) ;
          
-         var browserScreen = ( new BrowserScreen() ).init( 40, {{width}}, {{height}} ) ;
+         var browserScreen = ( new BrowserScreen() ).init( 40, {{width}}, {{height}} ) ; // create a browser screen with dimensions passed as vars to the html template that created this page
          
-         var socket = io.connect( 'http://' + location.hostname + ':' + {{port}} ) ;
+         var socket = io.connect( 'http://' + location.hostname + ':' + {{port}} ) ; // establish a socket connetion with the port passed as vars to the html template that created this page
         
-        socket.on( 'p', function( arg )
+        socket.on( 'p', function( arg ) // stream any put pixel command that is received to the browser screen
                         {
-                         console.log(  'BrowserScreen.setColor: ' + JSON.stringify( arg ) ) ;
-                         // browserScreen.setColor( arg.x, arg.y, arg.color ) ;
+                         console.log(  'BrowserScreen.setColor: ' + JSON.stringify( arg ) ) ; 
                          browserScreen.executeCommand( arg ) ;
                         } ) ;
                 

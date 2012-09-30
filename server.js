@@ -26,26 +26,23 @@ var io = socketio.listen(socketIoPort);
 
 io.configure( function() 
     {
-     io.set('log', false);
+     io.set('log', false); // don't log, cause you won't be able to see any other debug message
     } ) ;
 
 
 server.configure(function() {
 
-    // server.use('/media', express.static(__dirname + '/media'));
-    //  server.use(express.static(__dirname + '/public'));
+    server.use(express.static(path.dirname() + '/public')); // serve all files in the folder /public
 
-    server.use(express.static(path.dirname() + '/public'));
+    server.set('views', path.dirname() + '/views'); // the folder views contains all the html templates
 
-    server.set('views', path.dirname() + '/views');
-
-    server.engine('.html', consolidate.mustache);
+    server.engine('.html', consolidate.mustache); // use mustache as the template engine
 
 });
     
 function screenFromArguments( args )
     {
-
+     // if one of the command line arguments is "--runAtHome", use a browser screen, otherwise, use the arduino connected to the led wall
      for( var i = 2 ; i < args.length ; i++ )
         {   
          console.log( args[ i ] ) ;
@@ -55,18 +52,23 @@ function screenFromArguments( args )
                 return (new RemoteScreen()).init( server, browserScreenPort, WIDTH, HEIGHT ) ;         
             }
         }
+     // if no argument is --runAtHome, make the arduino the screen
      return (new ArduinoScreen()).init('/dev/leddisplay', WIDTH, HEIGHT) ;
     } ;
 
+// create a screen, based on command line arguments
 var screen = screenFromArguments( process.argv ) ;
 // (new ArduinoScreen()).init('/dev/leddisplay', WIDTH, HEIGHT);
 var gamePicker;
 
 setTimeout(function() {
 
+    // SET UP PLAYER MANAGEMENT
+    
     var playerQueueManagement = (new PlayerQueueManagement()).init();
 
-
+    // if a player connects add him to playerQueueManagement, if a player disconnects remove the player from playerQueueManagement
+    
     io.sockets.on('connection', function( socket ) {
         playerQueueManagement.addConnectingPlayer(socket.id);
         
@@ -78,15 +80,18 @@ setTimeout(function() {
 
     
 
-
+    // CREATE A GAME PICKER
     gamePicker = (new GamePicker()).init(screen, io.sockets, server, playerQueueManagement);
 
-
+    // LOAD THE CONTROLLER
     server.get('/', function(req, res) {
-        res.render('snesController.html', {
+        res.render('snesController.html', { // render the snesController template, with the correct port, so that the controller can make a socket connection to the server
             socketIoPort: socketIoPort
         });
     });
+
+
+    // THE WEB PAGES FOR ADDING YOUR GAME TO THE SCREEN
 
     server.get('/list', function(req, res) {
         var getInfo = url.parse(req.url, true);
@@ -162,6 +167,7 @@ setTimeout(function() {
         res.render('edit.html', view);
     });
 
+    // write pressed buttons to command line for debugging
 
     io.sockets.on('connection', function(socket) {
 

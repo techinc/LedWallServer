@@ -5,8 +5,13 @@ function BrowserScreen() { console.log( 'browser screen constructed' ) ; } ;
 BrowserScreen.prototype.init = function( tileWidth, columnCount, rowCount ) 
     {
      console.log( 'BrowserScreen.prototype.init' ) ;
+     
+     // the screen is an array of squares drawn by js library raphael
+     
      var paper = Raphael(0, 0, tileWidth * columnCount, tileWidth * rowCount ) ; 
      
+     
+     // here the squares are defined and drawn. At setColor later on in the code, the squares can be assigned new colors
      this.tileTable = [] ;
      
      for( var x = 0 ; x < columnCount ; x++ )
@@ -24,11 +29,15 @@ BrowserScreen.prototype.init = function( tileWidth, columnCount, rowCount )
 
 BrowserScreen.prototype.setColor = function( x, y, color )
     {
+     // assign color to the right raphael square in the table.
      this.tileTable[ x ][ y ].attr( 'fill', 'rgb( ' + color[ 0 ] + ', ' + color[ 1 ] + ', ' +  color[ 2 ] + ' )' ) ;
     } ;
 
 BrowserScreen.prototype.executeCommand = function( hexString )
     {
+     // the command is a hex value in a string string:xyrgb 
+     // where x and y consume on char and rgb consume 2 chars
+     // each of these is decoded into a javascript number
      this.setColor( 
         this.decodeFromHexString( hexString[ 0 ] ),
         this.decodeFromHexString( hexString[ 1 ] ),
@@ -40,7 +49,7 @@ BrowserScreen.prototype.executeCommand = function( hexString )
 
 BrowserScreen.prototype.fromHexLetter = function( hexLetter )
     {
-     switch( hexLetter )
+     switch( hexLetter ) // decode the hex letter
         {
          case 'a' : return 10 ;
          case 'b' : return 11 ;
@@ -61,9 +70,9 @@ BrowserScreen.prototype.decodeFromHexString = function( hexString )
      
      for( var i = hexString.length - 1 ; i >= 0 ; i-- )
         {
-         val *= 16 ;
-         val += this.fromHexLetter( hexString.charAt( i ) ) ;
+         val *= 16 ; // move all hex values one hex digit higher
+         val += this.fromHexLetter( hexString.charAt( i ) ) ; // and decode the next hex digit
         }
     
-     return val ;
+     return val ; // then finally return the result
     } ;
