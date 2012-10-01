@@ -57,8 +57,8 @@ AbstractScreen.prototype.validObject = function( obj )
             }
         
         }
-    
-} ) ;
+    return "correct" ;
+} ;
 
 
 AbstractScreen.prototype.clear = function()

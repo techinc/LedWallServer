@@ -1,0 +1,28 @@
+server.js                   - starts the server
+                            - sets up communication modules
+                            - sets up screen
+                            - starts game menu
+                
+GamePicker.js               - a menu for picking games
+                
+GameExecuter.js             - Sets up communication with a game and streams its frames to the screen
+
+ArduinoScreen.js            - Communicates with the LedWall
+
+RemoteScreen.js             - Encodes setColor commands and sends them to the BrowserScreen of any visitor to {host:port}/screen
+
+public/js/BrowserScreen.js  - a screen that can run in the browser, and can decode RemoteScreen messages
+
+AbstractScreen.js           - Parent prototype for screens (a prototype is sort of a class)     
+                            - it stores a representation of the current state of a screen
+
+views/snesController.html   - template for a controller, that also contains javascript for sending controller events to the
+                              led wall server
+                    
+views                       - folder containing all html templates
+
+public                      - folder containing all publicly accessible files
+
+games                       - folder with the json files describing games and the servers where they can be found, that are actually loaded in the menu
+
+games.dist                  - folder with the json files describing games and the servers where they can be found

@@ -148,8 +148,11 @@ function shiftTail() {
 
 function drawTail() {
     console.log('drawTail');
-    for (var i = 0; i < tail.length; i++) {
-        screen.setColor(tail[i].x, tail[i].y, tail[i].color);
+    // for (var i = 0; i < tail.length; i++) {
+    //    screen.setColor(tail[i].x, tail[i].y, tail[i].color);
+        
+      for( var i = tail.length - 1 ; i == 0 ; i++ )
+          screen.setColor(tail[i].x, tail[i].y, tail[i].color);  
     }
 }
 

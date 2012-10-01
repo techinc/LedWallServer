@@ -287,7 +287,7 @@ GameExecuter.prototype.timeCycleRequest = function(elapsedTime) {
             {
              case "bitmap" :
              
-                if( screen.validObject( obj.content ) != 'correct' ){ this.sendError( screen.validObject( obj.content ) ) ; }
+                if( self.screen.validObject( obj.content ) != 'correct' ){ self.sendError( self.screen.validObject( obj.content ) ) ; }
              
                    self.screen.fromObject(obj.content); // actually load the next frame
                 break ;

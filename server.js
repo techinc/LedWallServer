@@ -102,11 +102,23 @@ setTimeout(function() {
 
 
         if (getInfo.query && getInfo.query.fileName ) {
-            console.log('ADDING FILE');
 
-            if( !getInfo.query.filename.match( '^[a-zA-Z]$' ) ) {
+            if( !getInfo.query.fileName.match( '^[a-zA-Z]+$' ) ) 
+                 error = 'server/list: illegal filename: ' + getInfo.query.fileName + ' regex for correct filename = "^[a-zA-Z]+$"' ;
+            else if( !getInfo.query.port || !getInfo.query.port.match( '^\\d\\d\\d\\d$' ) )
+                error = 'server/list: illegal port: ' + getInfo.query.port + ' regex for correct port = "^\\d\\d\\d\\d$"' ; 
+            else if( getInfo.query.path != '' && !getInfo.query.path.match( '^[a-zA-Z]+(/[a-zA-Z]+)*$' )  ) 
+                error = 'server/list: illegal path: ' + getInfo.query.path + ' regex for correct path = "^[a-zA-Z]+(/[a-zA-Z]+)*$" or just leave the field empty' ; 
+            else if( !getInfo.query.host || !( getInfo.query.host.match( '^[a-zA-Z]+([.][a-zA-Z]+)+$' ) || getInfo.query.host.match( '^localhost$' ) || getInfo.query.host.match( '\\d\\d?\\d?.\\d\\d?\\d?.\\d\\d?\\d?.\\d\\d?\\d?' ) ) ) 
+                error = 'server/list: illegal host: ' + getInfo.query.host + ' regexes for correct hosts are "^localhost$" or "^[a-zA-Z]+([.][a-zA-Z]+)+$" or "\\d\\d?\\d?.\\d\\d?\\d?.\\d\\d?\\d?.\\d\\d?\\d?" ' ;
+            else if( !getInfo.query.frameDuration || !getInfo.query.frameDuration.match( '^\\d+$' ) )
+                error = 'server/list: frameDuration is not an integer: ' + getInfo.query.frameDuration + ', enter the correct frame duration in milliseconds (regex = "^\\d+$")' ;
+            else if( !( getInfo.query.submit == 'submit' || getInfo.query.submit == 'delete' ) )
+                error = 'the value of submit should be either "submit" or "delete": ' + getInfo.query.submit  ;
+            else
+            {
                 try {
-                    var gameInfoString = fs.readFileSync('./games/' + getInfo.query.fileName);
+                    var gameInfoString = fs.readFileSync('./games/' + getInfo.query.fileName + '.json' );
                 } catch (err) {
                     gameInfoString = false
                 }
@@ -121,16 +133,25 @@ setTimeout(function() {
 
                 console.log('./games/' + fileName);
 
-                fs.writeFileSync('./games/' + fileName, JSON.stringify(gameInfo));
+                if( getInfo.query.submit == 'submit' && fs.writeFileSync('./games/' + fileName + '.json', JSON.stringify(gameInfo)) )
 
-                gamePicker.loadGames();
+                    gamePicker.loadGames();
+                
+                try {
+                if( getInfo.query.submit == 'delete' && fs.unlinkSync('./games/' + fileName + '.json', JSON.stringify(gameInfo)) )
+
+                    gamePicker.loadGames();
+                } catch( err ) {
+                    error = "Deleting the file failed. It probably doesn't exist" ;
+                }
             }
-            else
-                error = 'server/list: illegal filename' ;
         }
 
         // load the .json files in ./games
-        var fileSet = fs.readdirSync('./games');
+        var fileSet = fs.readdirSync('./games').filter(function (name) { // load all games, that are contained in files that do not start with a '.' in their name
+                return name[0]!='.';
+            } );
+
 
         console.log(fileSet);
         
@@ -144,7 +165,7 @@ setTimeout(function() {
         for (var i in fileSet)
 
         fileSetForView.fileSet.push({
-            fileName: fileSet[i]
+            fileName: fileSet[i].substr( 0, fileSet[ i ].length - 5 ) 
         });
 
         console.log(fileSetForView);
@@ -159,9 +180,13 @@ setTimeout(function() {
 
         var getInfo = url.parse(req.url, true);
         var gameInfoString = false;
-        try {
-            gameInfoString = fs.readFileSync('./games/' + getInfo.query.fileName);
-        } catch (err) {};
+        
+        if( getInfo && getInfo.query && getInfo.query.fileName != undefined && !getInfo.query.fileName.match( '^[a-zA-Z]+$' ) )
+            error = 'server/edit: filename incorrect: ' + getInfo.query.fileName + ' filename must match the regex "^[a-zA-Z]+$"' ;
+        else
+            try {
+                gameInfoString = fs.readFileSync('./games/' + getInfo.query.fileName + '.json' );
+            } catch (err) {};
 
         var view = {};
         if (gameInfoString) {
