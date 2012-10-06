@@ -4,6 +4,8 @@ AbstractScreen.prototype.init = function(width, height) {
     this.width = width;
     this.height = height;
 
+	console.log( 'ABSTRACT SCREEN ' + width + ' ' + height )
+
     this.pixelMap = new Array(width);
     for (var x = 0; x < width; x++) {
         this.pixelMap[x] = [];

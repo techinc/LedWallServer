@@ -1,6 +1,5 @@
 
-var GameServerAPI = require( './GameServerAPI' ) ;
-
+var GameAPI = require( '../GameAPI' ) ;
 
 
 function Map() {}
@@ -249,7 +248,7 @@ function Game() {}
 
 Game.STARTING_LENGTH = 3 ;
 
-Game.prototype = new GameServerAPI() ;
+Game.prototype = new GameAPI() ;
 
 
 Game.prototype.start = function( width, height ) 
@@ -262,6 +261,13 @@ Game.prototype.start = function( width, height )
      var p = this.map.startingLocation() ;
      
      this.apple = ( new Apple() ).init( this.map, p.x, p.y ) ;
+
+
+	 var self = this ;
+	 this.timeCycleInterval = setInterval( function() {
+		console.log( 'time cycle' ) ;
+		self.timeCycle( self.screen )
+	 }, 200 ) ;
     } ;
 
 
@@ -275,6 +281,8 @@ Game.prototype.timeCycle = function( screen )
         }
         
      this.apple.draw( screen ) ;
+
+	 this.sendFrame() ;
     } ;
 
 
@@ -316,15 +324,16 @@ Game.prototype.playerCommand = function( command )
         {
          switch( command.button )
             {
-             case 'up':      if( player.vy != -1 ) { player.vy =  1 ; player.vx =  0 ; } break ;
-             case 'down':    if( player.vy !=  1 ) { player.vy = -1 ; player.vx =  0 ; } break ;  
+             case 'up':      if( player.vy !=  1 ) { player.vy = -1 ; player.vx =  0 ; } break ;
+             case 'down':    if( player.vy != -1 ) { player.vy =  1 ; player.vx =  0 ; } break ;  
              case 'left':    if( player.vx != -1 ) { player.vx =  1 ; player.vy =  0 ; } break ;
              case 'right':   if( player.vx !=  1 ) { player.vx = -1 ; player.vy =  0 ; } break ;
             }
         }
     } ;
 
-var game = ( new Game() ).init( 7979 ) ;
+game = ( new Game() ).init( 7979, require( '../SocketMessenger'), require( '../JSONCodec') ) ;
+
 
 
 

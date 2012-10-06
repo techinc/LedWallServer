@@ -7,6 +7,16 @@ GamePicker.js               - a menu for picking games
                 
 GameExecuter.js             - Sets up communication with a game and streams its frames to the screen
 
+GameExecuterProtocol.js		- Combines a messenger (that sends and receives messages) and a codec
+							  (which translates requests into message data) to form a protocol
+
+HttpProtocol.js				- protocol for communicating with a game
+
+SocketMessenger.js			- Packages, sends, receives and unpackages messages
+
+JSONCodec.js				- encodes and decodes requests
+
+
 ArduinoScreen.js            - Communicates with the LedWall
 
 RemoteScreen.js             - Encodes setColor commands and sends them to the BrowserScreen of any visitor to {host:port}/screen
@@ -23,6 +33,9 @@ views                       - folder containing all html templates
 
 public                      - folder containing all publicly accessible files
 
-games                       - folder with the json files describing games and the servers where they can be found, that are actually loaded in the menu
+games/                       - folder with the json files describing games and the servers where they can be found, that are actually loaded in the menu
 
-games.dist                  - folder with the json files describing games and the servers where they can be found
+games.dist/                  - folder with the json files describing games and the servers where they can be found/
+
+
+sampleGames/				 - folder containing some simple demo games, to illustrate what is possible

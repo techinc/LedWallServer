@@ -14,7 +14,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node start",
-    "runathome": "node start -f ProcfileRunAtHome"
+    "runathome": "node startRunAtHome"
   },
   "repository": {
     "type": "git",

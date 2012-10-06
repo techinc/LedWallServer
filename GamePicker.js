@@ -112,7 +112,7 @@ GamePicker.prototype.listenToSocketForGameExit = function(socket) {
         if (data == 'down') {
 
 
-            self.currentGameExecuter.stopRequest(function() {
+            self.currentGameExecuter.stop(function() {
                 console.log("STOP REQUEST INVOKED");
                 self.isPlayingGame = true; // is this line actually necessary?
 
@@ -170,7 +170,6 @@ GamePicker.prototype.selectGameInfo = function(index) {
     this.selectedGameInfo = JSON.parse(fs.readFileSync('./games/' + this.gameInfoSet[index])); // get info on the selected game
 
     console.log( './games/' + this.gameInfoSet[index] ) ;
-    console.dir( this.selectedGameInfo ) ;
 
     if (!this.selectedGameInfo.image) { // if the game has no image, give it the place holder image with the question mark
         this.selectedGameInfo.image = JSON.parse(fs.readFileSync('./public/img/screenshotUnavailable.asc'));

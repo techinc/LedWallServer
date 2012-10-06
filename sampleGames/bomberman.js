@@ -1,5 +1,5 @@
 
-var GameServerAPI = require( './GameServerAPI' ) ;
+var GameAPI = require( '../GameAPI' ) ;
 
 var game ; // make the game a global so that everything can access everything (maybe not the best design but let's be practical)
 
@@ -416,11 +416,13 @@ function Game() {}
 
 Game.STARTING_LENGTH = 3 ;
 
-Game.prototype = new GameServerAPI() ;
+Game.prototype = new GameAPI() ;
 
 
 Game.prototype.start = function( width, height ) 
     {
+	 console.log( 'START');
+	
      this.map = ( new Map() ).init( width, height ) ;
      
      for( var x = 1 ; x < this.map.width  ; x+=2 )
@@ -447,6 +449,12 @@ Game.prototype.start = function( width, height )
 
      ( new BombIncrease() ).init( this.map ) ;
 
+	 console.log( 'INITIALIZING TIMECYLCE' ) ;
+	 var self = this ;
+	 this.timeCycleInterval = setInterval( function() {
+		console.log( 'time cycle' ) ;
+		self.timeCycle( self.screen )
+	}, 200 ) ;
     } ;
 
 
@@ -474,13 +482,15 @@ Game.prototype.timeCycle = function( screen )
          
          screen.setColor( x, y, color ) ;
         }
-        
+       
+	 this.sendFrame() ;
      console.log( 'end time cycle' ) ;
     } ;
 
 
 Game.prototype.stop = function( data )
     {
+     console.log( 'stop' ) ;
      
     } ;
 
@@ -498,6 +508,8 @@ Game.prototype.introducePlayer = function( playerId )
 
 Game.prototype.removePlayer = function( playerId )
     {
+     console.log( 'removePlayer' ) ;
+
      if( !this.bombermanSet[ playerId ] ) return ;
     
      this.bombermanSet[ playerId ].destroy() ;
@@ -507,7 +519,7 @@ Game.prototype.removePlayer = function( playerId )
     
 Game.prototype.playerCommand = function( command )
     {
-     
+     console.log( 'playerCommand' ) ;
      var player = this.bombermanSet[command.playerId];
           
      if( !player ) { console.log( 'NO PLAYER' ) ; return ; }
@@ -528,8 +540,8 @@ Game.prototype.playerCommand = function( command )
         {
          switch( command.button )
             {
-             case 'up':      { if( player.vy ==  1 ) player.vy =  0 ; } break ;
-             case 'down':    { if( player.vy == -1 ) player.vy =  0 ; } break ;  
+             case 'up':      { if( player.vy == -1 ) player.vy =  0 ; } break ;
+             case 'down':    { if( player.vy ==  1 ) player.vy =  0 ; } break ;  
              case 'left':    { if( player.vx == -1 ) player.vx =  0 ; } break ;
              case 'right':   { if( player.vx ==  1 ) player.vx =  0 ; } break ;
             }
@@ -537,7 +549,7 @@ Game.prototype.playerCommand = function( command )
 
     } ;
 
-game = ( new Game() ).init( 8989 ) ;
+game = ( new Game() ).init( 8989, require( '../SocketMessenger'), require( '../JSONCodec') ) ;
 
 
 

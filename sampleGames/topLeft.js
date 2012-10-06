@@ -1,4 +1,4 @@
-var AbstractScreen = require('./AbstractScreen');
+var AbstractScreen = require('../AbstractScreen');
 var http = require('http');
 
 

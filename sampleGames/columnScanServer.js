@@ -1,9 +1,9 @@
-var AbstractScreen = require('./AbstractScreen');
+var AbstractScreen = require('../AbstractScreen');
 var http = require('http');
 
 
 var screen;
-var y;
+var x;
 var animationInterval;
 
 
@@ -11,6 +11,8 @@ http.createServer(function(req, res) {
     res.writeHead(200, {
         'Content-Type': 'text/plain'
     });
+
+
 
     if (req.url == '/init') {
         var responseData = "";
@@ -30,7 +32,7 @@ http.createServer(function(req, res) {
 
             screen = (new AbstractScreen()).init(width, height);
 
-            y = 0;
+            x = 0;
             clearScreen();
 
             if (animationInterval) clearInterval(animationInterval);
@@ -39,7 +41,7 @@ http.createServer(function(req, res) {
         });
     } else if (req.url == '/timeCycle') {
         console.log('timeCycle');
-        drawNextRow();
+        drawNextColumn();
         res.end(JSON.stringify({
             type: "bitmap",
             content: screen.toObject()
@@ -52,7 +54,7 @@ http.createServer(function(req, res) {
 
 
 
-}).listen(2000, 'localhost');
+}).listen(5000, 'localhost');
 
 
 
@@ -66,15 +68,16 @@ function clearScreen() {
     };
 };
 
-function drawNextRow() {
-    for (var x = 0; x < screen.width; x++)
+function drawNextColumn() {
+    for (var y = 0; y < screen.height; y++)
     screen.setColor(x, y, [0, 0, 0]);
 
-    y++;
-    if (y >= screen.height) y = 0;
+    x++;
+    if (x >= screen.width) x = 0;
 
 
-    for (var x = 0; x < screen.width; x++)
+
+    for (var y = 0; y < screen.height; y++)
     screen.setColor(x, y, [1, 0, 0]);
 
 };

@@ -1,5 +1,8 @@
 main: node server --runAtHome
-bouncingBallServer: node bouncingBallServer
-columnScanServer: node columnScanServer
-rowScanServer: node rowScanServer
-rainbowRippleServer: node rainbowRippleServer
+bouncingBallServer: node sampleGames/bouncingBallServer
+columnScanServer: node sampleGames/columnScanServer
+rowScanServer: node sampleGames/rowScanServer
+rainbowRippleServer: node sampleGames/rainbowRippleServer
+snakeServer: node sampleGames/snake
+bombermanServer: node sampleGames/bomberman
+multiDrawServer: node sampleGames/multiDrawServer

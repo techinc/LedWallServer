@@ -16,7 +16,7 @@ ArduinoScreen.prototype.init = function(serialString, width, height) {
         baudrate: 115200
     });
 
-
+	/* // this is old code and no longer necessary
     this.sendQueue = []; // the sendQueue stores all putpixelcommands that the arduino can't handle yet
                          // the screen won't send more than ArduinoScreen.MESSAGE_LIMIT  messages.
 
@@ -27,11 +27,26 @@ ArduinoScreen.prototype.init = function(serialString, width, height) {
 
         self.flushSendQueue();
     });
-
+	*/
     AbstractScreen.prototype.init.call(this, width, height);
-
+	
     return this;
 };
+
+ArduinoScreen.prototype.send = function(message) {
+
+    this.serial.write(message); // send it
+	
+	/* // the old convoluted way of sending messages
+    this.sendQueue.push(message); // push the message on the send queue
+
+    this.sentMessageCount++; // increase the sent message count
+    if (this.sentMessageCount <= ArduinoScreen.MESSAGE_LIMIT) { // while the message count has not been exceeded, keep sending messages
+        this.flushSendQueue();
+    }*/
+};
+
+/* // old code probably no longer necessary
 
 // is this function actually called? :
 ArduinoScreen.prototype._sendNext = function() {
@@ -45,24 +60,13 @@ ArduinoScreen.prototype._sendNext = function() {
     }
 };
 
-
-ArduinoScreen.prototype.send = function(message) {
-    this.sendQueue.push(message); // push the message on the send queue
-
-    this.sentMessageCount++; // increase the sent message count
-    if (this.sentMessageCount <= ArduinoScreen.MESSAGE_LIMIT) { // while the message count has not been exceeded, keep sending messages
-        this.flushSendQueue();
-    }
-};
-
-
 ArduinoScreen.prototype.flushSendQueue = function() {
     this.sentMessageCount = 0; // this line is probably a bug. I think it should be removed, because it prevents the sentMessageCount from increasing
 
     while (this.sendQueue.length > 0) // if there are messages to be sent, send all messages
         this.serial.write(this.sendQueue.shift());
 };
-
+*/
 
 ArduinoScreen.prototype.setColor = function(x, y, color) {
     AbstractScreen.prototype.setColor.call(this, x, y, color); // by calling this parent method, the screen knows what pixels are set to what colors

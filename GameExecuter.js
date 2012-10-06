@@ -1,5 +1,4 @@
-var querystring = require('querystring');
-var http = require("http");
+var GameExecuterProtocol = require( './GameExecuterProtocol' ) ;
 
 function GameExecuter() {}
 
@@ -12,21 +11,23 @@ GameExecuter.prototype.init = function(screen, gameInfo, sockets, server, player
     this.gameInfo = gameInfo;
     
     this.sockets = sockets;
-    this.server = server;
-    
+
+	// the protocol does the actual communication with the game.
+	this.protocol = this.createProtocol( gameInfo, server, this.onKill.bind( this ), this.onFrame.bind( this ) ) ;
+
+	// initRequest is the first request sent to a game.
+    this.protocol.initRequest( this.screen.width, this.screen.height );
 
     this.playerQueueManagement = playerQueueManagement;
-
-    this.sequentialRequestQueue = [] ;
    
-    // there is a playerLimit that is not 0, it is a multiplayer game.
+    // there is a playerLimit that is not 0, it is a single/multiplayer game.
     //      have playerQueueManagement start the game
     //      every time the playerQueueManagement thinks it is necessary to introduce a new player the passed callback is called
     //          The passed callback, actually informs the game that the player should be introduced, and sets up streaming 
     //          controller input of the new player to the game.
     
     if (gameInfo.playerLimit) this.playerQueueManagement.startGame(gameInfo.playerLimit, function(id) {        
-        self.introducePlayerRequest( id );
+        self.protocol.introducePlayerRequest( id );
         
         var clients = self.sockets.clients() ;
         
@@ -37,44 +38,80 @@ GameExecuter.prototype.init = function(screen, gameInfo, sockets, server, player
     });
 
 
-    this.server.post('/killPlayer', function(req, res) { // if a call is made on the server to kill the player, kill it
-        
-        console.log( 'KILL PLAYER REQUEST RECEIVED' ) ;
-        
-        var responseData = "";
-
-        req.on('data', function(chunk) {
-            responseData += chunk;
-        });
-
-        req.on('end', function() { // when the playerId has been received, kill the player
-            var playerId = querystring.parse( responseData ).playerId ; // req.body.playerId ; // JSON.parse(responseData);
-
-            console.log( 'REQUEST COMPLETE, KILLING PLAYER WITH ID ' + playerId  ) ;
-            
-            var clients = self.sockets.clients() ;
-            for( var i in clients )
-                if( clients[ i ].id == playerId )      
-                    self.stopStreamingControllerInput( clients[ i ] ) ;
-            
-            // playerId need not be checked on correctness because it can be any string.
-            
-            self.playerQueueManagement.killPlayer( playerId ); // don't forget to remove it from playerQueueManagement as well
-        } ) ;
-        
-        res.end() ;
-    });
-
-    this.initRequest();
-
-    this.previousTime = (new Date()).getTime();
-
-    this.sequentialRequestsQueue = [];
-
-    this.isSendingSequentialRequest = false;
-
     return this;
 } ;
+
+GameExecuter.prototype.stop = function( callback )
+{
+	this.protocol.stopRequest( callback ) ;
+} ;
+GameExecuter.prototype.createProtocol = function( gameInfo, server, onKill, onFrame ) {
+	// based on the gameInfo (taken from the file in ./games) the protocol is selected
+	
+	// there are two types of protocols: integrated and composite protocols
+	
+	// a composite protocol consists of a messenger and a codec
+	// the codec encodes and decodes string respresentations for requests to and from a game
+	// the messenger packages, sends, receives and unpackages messages
+	
+	// an integrated protocol takes care of both 
+	
+	// if no messenger or codec are specified, an integrated protocol is required, 
+	// assume the HttpProtocol
+	if( gameInfo.messenger === undefined && gameInfo.codec === undefined )
+		{
+		 var HttpProtocol = require( './HttpProtocol' ) ;
+	
+		 return ( new HttpProtocol() ).init( gameInfo, server, onKill, onFrame ) ;
+	 	}
+	
+	
+	// otherwise a composite protocol is required, 
+	// so select the correct messenger and codec (currently only two exist)
+	var Messenger ;
+	var Codec ;
+	switch( gameInfo.messenger )
+		{
+		 case "SocketMessenger" :
+			Messenger = require( './SocketMessenger' ) ; // a messenger that uses sockets
+			break ;
+		}
+		
+	switch( gameInfo.codec )
+		{
+		 case "JSONCodec":
+			Codec = require( './JSONCodec' ) ; // a codec that is based on json
+			break ;
+		}
+	
+	// then create a new protocol using the messenger and the codec
+	var gameExecuterProtocol = new GameExecuterProtocol() ;	
+	var messenger 	= ( new Messenger() ).initClient( gameInfo.port, gameInfo.host, gameExecuterProtocol.processMessage.bind( gameExecuterProtocol ) ) ;
+	var codec 		= ( new Codec() ).init()  ;
+	
+	return gameExecuterProtocol.init( messenger, codec, onKill, onFrame ) ;
+} ;
+
+
+GameExecuter.prototype.onKill = function( playerId )
+	{
+	 var clients = this.sockets.clients() ;
+	 for( var i in clients )
+	    if( clients[ i ].id == playerId )      
+	        this.stopStreamingControllerInput( clients[ i ] ) ;
+		
+	 this.playerQueueManagement.killPlayer( playerId ); // don't forget to remove it from playerQueueManagement as well	
+	} ;
+
+GameExecuter.prototype.onFrame = function( frame )
+	{
+	 var result = this.screen.validObject( frame ) ;
+		
+	  if( result != 'correct' ){ this.protocol.sendError( result ) ; }
+      else
+     	this.screen.fromObject(frame); // actually load the next frame	
+	} ;
+
 
 GameExecuter.prototype.getSocketById = function(socketId) {
     console.log( 'GameExecuter.prototype.getSocketById( id ) with id = ' + socketId ) ;
@@ -96,11 +133,11 @@ GameExecuter.prototype.introducePlayerRequest = function(playerId) {
 
     console.log( 'introducePlayerRequest ' + playerId ) ;
     
-    this.sendSequentialRequest( 'introduce', playerId ) ; // send a request to introduce the player
+    this.protocol.introducePlayerRequest( playerId ) ; // send a request to introduce the player
 
     var client = this.getSocketById(playerId); 
     client.on('disconnect', function() { // but when the player disconnects send a request to remove the player
-        self.sendSequentialRequest('removePlayer', playerId);
+        self.protocol.removePlayer(playerId);
     });
 };
 
@@ -129,28 +166,28 @@ GameExecuter.prototype.streamControllerInput = function(client, playerId) {
     // send on any button that has been pressed to /playercommand
 
     client.on('controllerUp', function(message) {
-        self.sendSequentialRequest('playerCommand', {
+        self.protocol.playerCommand( {
             playerId: playerId,
             button: 'up',
             event: message
         });
     });
     client.on('controllerDown', function(message) {
-        self.sendSequentialRequest('playerCommand', {
+        self.protocol.playerCommand( {
             playerId: playerId,
             button: 'down',
             event: message
         });
     });
     client.on('controllerLeft', function(message) {
-        self.sendSequentialRequest('playerCommand', {
+        self.protocol.playerCommand( {
             playerId: playerId,
             button: 'left',
             event: message
         });
     });
     client.on('controllerRight', function(message) {
-        self.sendSequentialRequest('playerCommand', {
+        self.protocol.playerCommand( {
             playerId: playerId,
             button: 'right',
             event: message
@@ -158,28 +195,28 @@ GameExecuter.prototype.streamControllerInput = function(client, playerId) {
     });
 
     client.on('controllerA', function(message) {
-        self.sendSequentialRequest('playerCommand', {
+        self.protocol.playerCommand( {
             playerId: playerId,
             button: 'a',
             event: message
         });
     });
     client.on('controllerB', function(message) {
-        self.sendSequentialRequest('playerCommand', {
+        self.protocol.playerCommand( {
             playerId: playerId,
             button: 'b',
             event: message
         });
     });
     client.on('controllerX', function(message) {
-        self.sendSequentialRequest('playerCommand', {
+        self.protocol.playerCommand( {
             playerId: playerId,
             button: 'x',
             event: message
         });
     });
     client.on('controllerY', function(message) {
-        self.sendSequentialRequest('playerCommand', {
+        self.protocol.playerCommand( {
             playerId: playerId,
             button: 'y',
             event: message
@@ -187,7 +224,7 @@ GameExecuter.prototype.streamControllerInput = function(client, playerId) {
     });
 
     client.on('controllerStart', function(message) {
-        self.sendSequentialRequest('playerCommand', {
+        self.protocol.playerCommand( {
             playerId: playerId,
             button: 'start',
             event: message
@@ -195,172 +232,6 @@ GameExecuter.prototype.streamControllerInput = function(client, playerId) {
     });
 
 };
-
-GameExecuter.prototype.sendSequentialRequest = function(path, message) {
-
-    // Messages are not sent immediately. Instead, the next message is only sent after the first message has been confirmed.
-    // This means the messages arrive in the same order as they are sent. Especially with player commands it is important
-    // to first receive the button down event, and then receive the button up event.
-
-    // if a previous message was sent, but it has not been confirmed yet, new messages are queued. And it could theoretically take
-    // some time before a message is confirmed.
-
-    this.sequentialRequestQueue.push({
-        path: path,
-        message: message
-    });
-
-    if (this.isSendingSequentialRequest) return; // if messages are already being sent, don't start sending messages, but return
-
-    this.sendNextSequentialRequest(); // otherwise start the process of sending messages
-};
-
-GameExecuter.prototype.sendNextSequentialRequest = function() {
-
-    this.isSendingSequentialRequest = true; // first make sure that any next call knows messages are being sent
-
-    var self = this;
-
-    // if there is a next request, send it, otherwise notify every caller that no messages are being sent right now
-    var nextRequest = this.sequentialRequestQueue.shift(); 
-
-    if (!nextRequest) {
-        this.isSendingSequentialRequest = false;
-
-        return;
-    }
-    // if there is a message, send it, and pass a callback that sends the next message if confirmation is received
-    this.sendRequest(nextRequest.path, nextRequest.message, function() {
-        self.sendNextSequentialRequest();
-    });
-
-};
-
-
-
-
-
-GameExecuter.prototype.initRequest = function() {
-
-    // inform the game of the screen dimensions and the location of the server
-    // and then after the response to the init request has been received
-    // start sending timeCycle requests every time a frame is needed
-    var self = this;
-
-    this.sendRequest('init', {
-        serverUrl: "",
-        width: self.screen.width,
-        height: self.screen.height,
-        serverPort: self.server.locals.port,
-        serverPath: self.server.locals.path
-    }, function() {
-        self.timeCycleInterval = setInterval(function() {
-            var elapsedTime = (new Date()).getTime() - self.previousTime;
-
-            self.timeCycleRequest(elapsedTime);
-
-        }, self.gameInfo.frameDuration ? self.gameInfo.frameDuration : 50); // if no other frame duration is specified the frame duration is 1 / 20 of a second, i.e. 50 milliseconds
-
-    });
-
-};
-
-
-GameExecuter.prototype.timeCycleRequest = function(elapsedTime) {
-
-    // most of this function is just  error checking
-    // in essence it does two things: 
-    // 1. ask for a timeCycle
-    // 2. actually load the next frame
-
-    var self = this;
-
-    this.sendRequest('timeCycle', { // ask for a timeCycle
-        elapsedTime: elapsedTime
-    }, function(queryData) {
-
-        var obj = JSON.parse(queryData); // get the next frame
-
-        if( obj.type == undefined ) { this.sendError( 'GameExecuter.timeCycleRequest: type undefined in response timeCycleRequest' ) ; return ; }
-
-        switch( obj.type )
-            {
-             case "bitmap" :
-             
-                if( self.screen.validObject( obj.content ) != 'correct' ){ self.sendError( self.screen.validObject( obj.content ) ) ; }
-             
-                   self.screen.fromObject(obj.content); // actually load the next frame
-                break ;
-             default:
-                this.sendError( 'GameExecuter.timeCycleRequest: unknown message type: ' + obj.type ) ;
-                return ;
-            }
-
-        console.log( 'TIME_CYCLE COMPLETE' ) ; 
-    });
-
-};
-
-
-
-GameExecuter.prototype.stopRequest = function(callback) {
-    var self = this;
-    clearInterval(this.timeCycleInterval);
-
-    this.sendRequest('stop', '', function() {
-        callback();
-    });
-
-};
-
-GameExecuter.prototype.sendRequest = function(path, message, callback) {
-
-    // sends a request
-    // collects all the response data
-    // and when all response data is in, calls callback with the response data
-
-    // prepare the request, i.e. send it to the address specified in this.gameInfo
-    var options = {
-        host: this.gameInfo.host,
-        port: this.gameInfo.port,
-        path: this.gameInfo.path + '/' + path,
-        method: 'POST'
-    };
-
-    // collect all response data as it comes in piece by piece
-    var queryData = "";
-
-    var req = http.request(options, function(res) {
-        res.setEncoding('utf8');
-
-        res.on('data', function(chunk) {
-            queryData += chunk;
-        });
-
-        res.on('end', function() {
-            callback(queryData) ; // and when all data has been received, call callback passing the data as its argument
-        });
-
-
-    });
-
-    req.on('error', function(e) {
-        console.log('problem with request: ' + e.message);
-    });
-
-
-    req.write(JSON.stringify(message));
-    req.end();
-};
-
-
-GameExecuter.prototype.sendError = function( errorMessage ) {
-
-    console.log( errorMessage ) ;
-    
-    this.sendRequest( 'error', errorMessage, function() {} ) ;
-
-} ;
 
 
 module.exports = GameExecuter;
