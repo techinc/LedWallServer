@@ -491,7 +491,7 @@ Game.prototype.timeCycle = function( screen )
 Game.prototype.stop = function( data )
     {
      console.log( 'stop' ) ;
-     
+     clearInterval( this.timeCycleInterval ) ;
     } ;
 
 Game.prototype.introducePlayer = function( playerId )

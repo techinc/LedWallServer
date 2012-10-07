@@ -43,6 +43,11 @@ Game.prototype.start = function( width, height ) {
 	}, 50) ;
 } ;
 
+Game.prototype.stop = function()
+{
+	clearInterval( this.timeCycleInterval ) ;
+}
+
 Game.prototype.introducePlayer = function( playerId ) {
 
     playerSet[playerId] = (new MultiDrawer()).init();
