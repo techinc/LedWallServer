@@ -114,4 +114,12 @@ SocketMessenger.prototype.startReceiving = function() {
 	
 } ;
 
+
+SocketMessenger.prototype.destroy = function() {
+	this.socket.destroy() ;
+} ;
+
+
+
+
 module.exports = SocketMessenger ;

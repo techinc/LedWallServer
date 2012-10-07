@@ -56,6 +56,7 @@ GameExecuterProtocol.prototype.initRequest = function( width, height, serverPort
 
 GameExecuterProtocol.prototype.stopRequest = function( callback ) {
 	this.messenger.send( this.codec.createStopRequestMessage(), callback ) ;
+	this.messenger.destroy() ;
 } ;
 
 GameExecuterProtocol.prototype.introducePlayerRequest = function(playerId) {
