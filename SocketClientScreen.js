@@ -46,11 +46,13 @@ SocketClientScreen.prototype.fromObject = function(abstractScreenAsObject) {
 
 	var i=0;
 	var buf = new Buffer(360);
-
+	
     for (var y = 0; y < abstractScreenAsObject[0].length; y++)
         for (var x = 0; x < abstractScreenAsObject.length; x++)
         	for (var c = 0; c < 3; c++)
 			{
+				this.pixelMap[x][y][c] = abstractScreenAsObject[x][y][c];
+			
 				var v = abstractScreenAsObject[x][y][c];
 				if (v < 0)
 					v = 0;
@@ -63,4 +65,4 @@ SocketClientScreen.prototype.fromObject = function(abstractScreenAsObject) {
         this.flushSendQueue();
 };
 
-module.exports = ArduinoScreen;
+module.exports = SocketClientScreen;

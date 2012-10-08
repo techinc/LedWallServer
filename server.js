@@ -10,7 +10,7 @@ var fs = require("fs");
 var url = require("url");
 var GamePicker = require("./GamePicker");
 var PlayerQueueManagement = require("./PlayerQueueManagement");
-
+var SocketClientScreen = require( './SocketClientScreen' ) ;
 var RemoteScreen = require( './RemoteScreen' ) ;
 
 var WIDTH = 12;
@@ -24,10 +24,19 @@ var browserScreenPort = 4444 ;
 
 var io = socketio.listen(socketIoPort);
 
+
+console.log( io.version ) ;
 io.configure( function() 
     {
      io.set('log', false); // don't log, cause you won't be able to see any other debug message
+	 	
+//	 io.set('connect timeout',10);
+//	 io.set( 'heartbeat timeout', 5 )  ;
+//	 io.set( 'heartbeat interval', 2 ) ;
+
     } ) ;
+
+
 
 
 server.configure(function() {
@@ -53,7 +62,7 @@ function screenFromArguments( args )
             }
         }
      // if no argument is --runAtHome, make the arduino the screen
-     return (new SocketClientScreen()).init(8000,'10.68.0.139', WIDTH, HEIGHT) ;
+     return (new SocketClientScreen()).init(8000,'10.68.0.11', WIDTH, HEIGHT) ;
     } ;
 
 // create a screen, based on command line arguments
@@ -71,8 +80,22 @@ setTimeout(function() {
     
     io.sockets.on('connection', function( socket ) {
         playerQueueManagement.addConnectingPlayer(socket.id);
-        
+        var t = ( new Date() ).getTime() ;
+/* // almost done, but not yet working
+		var removeDisconnectedPlayer = function() { socket.disconnect() ; } ;
+
+		var disconnectPlayer = setTimeout( removeDisconnectedPlayer, 2000 ) ;	
+		
+		socket.on( 'alive', function() 
+			{ 
+			 if( disconnectPlayer ) clearTimeout( disconnectPlayer ) ; 
+			 disconnectPlayer = setTimeout( removeDisconnectedPlayer, 2000 ) ;	
+			} 
+		) ;
+			*/	
         socket.on('disconnect', function() {
+			console.log( 'DISCONNECTING PLAYER NOW ' + ( ( new Date() ).getTime() - t ) ) ;
+
             playerQueueManagement.removeDisconnectingPlayer(socket.id);
         });
     });

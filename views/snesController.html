@@ -136,8 +136,10 @@ var controller ;
 $( document ).ready( function()
 	{
      // create the socket connection to the server ( {{socketIoPor}} or the port number below is a var passed to this template )
-     var socket = io.connect( 'http://' + location.hostname + ':'+ '{{socketIoPort}}' ) ;
+     var socket = io.connect( 'http://' + location.hostname + ':'+ '{{socketIoPort}}', { 'sync disconnect on unload' : true} ) ;
      
+	 setInterval( function() { socket.emit( 'alive' ) ; }, 1000 ) ;
+
      socket.on( 'setMessage', function( data )
         {
          console.log( data ) ;

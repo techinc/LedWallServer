@@ -42,7 +42,17 @@ GamePicker.prototype.listenToAllClientsForNavigation = function() {
 
     var clients = this.sockets.clients();
     for (var i in clients) {
-        clients[i].removeAllListeners();
+
+        clients[i].removeAllListeners('controllerUp');
+        clients[i].removeAllListeners('controllerDown');
+        clients[i].removeAllListeners('controllerLeft');
+        clients[i].removeAllListeners('controllerRight');
+
+        clients[i].removeAllListeners('controllerA');
+        clients[i].removeAllListeners('controllerB');
+
+	    clients[i].removeAllListeners('controllerStart');	
+	    clients[i].removeAllListeners('controllerSelect');	
 
         this.listenToSocketForNavigation(clients[i]); // all current players should be able to navigate the menu
     }
@@ -60,8 +70,17 @@ GamePicker.prototype.listenToAllClientsForGameExit = function() {
 
     var clients = this.sockets.clients();
     for (var i in clients) {
-        clients[i].removeAllListeners(); 
+        clients[i].removeAllListeners('controllerUp');
+        clients[i].removeAllListeners('controllerDown');
+        clients[i].removeAllListeners('controllerLeft');
+        clients[i].removeAllListeners('controllerRight');
 
+        clients[i].removeAllListeners('controllerA');
+        clients[i].removeAllListeners('controllerB');
+
+	    clients[i].removeAllListeners('controllerStart');	
+	    clients[i].removeAllListeners('controllerSelect');
+	
         this.listenToSocketForGameExit(clients[i]); // all current players should be able to quit the game by pressing select
     }
 
