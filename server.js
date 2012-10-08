@@ -53,7 +53,7 @@ function screenFromArguments( args )
             }
         }
      // if no argument is --runAtHome, make the arduino the screen
-     return (new ArduinoScreen()).init('/dev/leddisplay', WIDTH, HEIGHT) ;
+     return (new SocketClientScreen()).init(8000,'10.68.0.139', WIDTH, HEIGHT) ;
     } ;
 
 // create a screen, based on command line arguments
