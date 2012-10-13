@@ -33,9 +33,10 @@ GameExecuter.prototype.init = function(screen, gameInfo, sockets, server, player
         
         for( var i in clients )
             if( clients[ i ].id == id )                
-                 self.streamControllerInput( clients[ i ], id ) ;
-                
-    });
+                 self.streamControllerInput( clients[ i ], id ) ;             
+    }, function( id ) { // but when the player disconnects send a request to remove the player
+	     	self.protocol.removePlayerRequest(id);
+	});
 
 
     return this;

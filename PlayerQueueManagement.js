@@ -10,11 +10,13 @@ PlayerQueueManagement.prototype.init = function() {
     return this;
 };
 
-PlayerQueueManagement.prototype.startGame = function(playerLimit, onIntroducePlayerFunction) {
+PlayerQueueManagement.prototype.startGame = function(playerLimit, onIntroducePlayerFunction, onRemovePlayerFunction ) {
 
     console.log( 'start game ' + playerLimit ) ;
 
     this.onIntroducePlayerFunction = onIntroducePlayerFunction;
+
+	this.onRemovePlayerFunction = onRemovePlayerFunction ;
 
     this.movePlayersToWaitingQueue();
 
@@ -93,6 +95,8 @@ PlayerQueueManagement.prototype.removeDisconnectingPlayer = function(id) {
     if (this.waitingQueue.indexOf(id) != -1) this.waitingQueue.splice(this.waitingQueue.indexOf(id), 1);
     else {
         this.playingQueue.splice(this.waitingQueue.indexOf(id), 1);
+
+		this.onRemovePlayerFunction( id ) ;
 
         if (this.canAddPlayer()) this.introduceNextPlayer();
     }

@@ -81,7 +81,7 @@ setTimeout(function() {
     io.sockets.on('connection', function( socket ) {
         playerQueueManagement.addConnectingPlayer(socket.id);
         var t = ( new Date() ).getTime() ;
-/* // almost done, but not yet working
+ 		// almost done, but not yet working
 		var removeDisconnectedPlayer = function() { socket.disconnect() ; } ;
 
 		var disconnectPlayer = setTimeout( removeDisconnectedPlayer, 2000 ) ;	
@@ -92,7 +92,7 @@ setTimeout(function() {
 			 disconnectPlayer = setTimeout( removeDisconnectedPlayer, 2000 ) ;	
 			} 
 		) ;
-			*/	
+				
         socket.on('disconnect', function() {
 			console.log( 'DISCONNECTING PLAYER NOW ' + ( ( new Date() ).getTime() - t ) ) ;
 
