@@ -62,7 +62,7 @@ function screenFromArguments( args )
             }
         }
      // if no argument is --runAtHome, make the arduino the screen
-     return (new SocketClientScreen()).init(8000,'10.68.0.11', WIDTH, HEIGHT) ;
+     return (new SocketClientScreen()).init(8000,'localhost', WIDTH, HEIGHT) ;
     } ;
 
 // create a screen, based on command line arguments
